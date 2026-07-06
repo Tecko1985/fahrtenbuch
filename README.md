@@ -14,10 +14,19 @@ Live: https://tecko1985.github.io/fahrtenbuch/
   Sicherheits-Checklisten vor und nach der Fahrt, Mängel als Freitext **plus
   Foto-Upload**, handschriftliche **Unterschrift** (Canvas). Fahrten können als
   „offen“ zwischengespeichert und später abgeschlossen werden.
-- **Führerschein:** jeder Fahrer lädt seine Führerschein-Kopie einmal pro Saison hoch;
-  Admin/berechtigte Gruppe sehen ein Register, wer für welche Saison eine Kopie hat.
+- **Führerschein:** jeder Fahrer lädt seine Führerschein-Kopie hoch (am Handy direkt per
+  Kamera); nach der ersten Einreichung ist sie **alle 6 Monate** zu erneuern — die App
+  zeigt „gültig bis …“ bzw. „abgelaufen“. Ein Register (Fahrer · eingereicht · gültig bis ·
+  Status) sehen **nur** Admin und die Gruppe `fuehrerschein-einsicht`.
 - **Rechte:** jeder eingeloggte Nutzer legt/sieht seine **eigenen** Fahrten;
-  Admin und die Gruppe `fahrtenbuch-bearbeiter` sehen und verwalten **alle**.
+  Admin und die Gruppe `fahrtenbuch-bearbeiter` sehen und verwalten **alle Fahrten**.
+  Die Einsicht in fremde Führerschein-Kopien ist davon getrennt und liegt allein bei
+  Admin + Gruppe `fuehrerschein-einsicht` (jeder sieht immer seine eigene Kopie).
+
+> **Hinweis zur Vertraulichkeit:** Das Einsicht-Gate wirkt in der Oberfläche. Die Dateien
+> liegen im gemeinsamen Nextcloud-Ordner der App und sind über das Gateway technisch für
+> jeden mit Tool-Zugriff abrufbar, der die interne Datei-Id kennt — echte serverseitige
+> Abschottung würde einen Umbau am Gateway-Worker erfordern (wie bei allen Gateway-Apps).
 
 ## Architektur
 
