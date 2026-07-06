@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚐 Fahrtenbuch</title>
+<meta name="theme-color" content="#1a56a0" />
+<link rel="stylesheet" href="style.css?v=1.0" />
+</head>
+<body>
+
+  <div class="connect-screen" id="connect-screen">
+    <div class="card">
+      <h2>🚐 Fahrtenbuch</h2>
+      <p id="connect-message">Bitte über die Tools-Übersicht anmelden, um das Fahrtenbuch zu nutzen.</p>
+      <div class="btn-row">
+        <a class="btn" href="https://tecko1985.github.io/ToolsUebersicht/">Zur Tools-Übersicht</a>
+      </div>
+      <p class="muted" id="cloud-error" style="margin-top:14px;"></p>
+    </div>
+  </div>
+
+  <div id="app-shell" style="display:none;">
+    <header>
+      <h1>🚐 Fahrtenbuch <span class="version-badge" id="version-badge"></span></h1>
+      <a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a>
+      <div class="header-right">
+        <span class="header-status" id="save-status"></span>
+        <span class="header-user" id="header-user"></span>
+        <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+      </div>
+    </header>
+
+    <nav>
+      <button data-tab="fahrten" class="active">Fahrten</button>
+      <button data-tab="fuehrerschein">Führerschein</button>
+      <button data-tab="einstellungen" style="margin-left:auto;">Einstellungen <span class="version-badge" id="version-badge-nav"></span></button>
+    </nav>
+
+    <main>
+
+      <!-- ---------- Fahrten ---------- -->
+      <section class="tab-section active" id="tab-fahrten">
+        <div class="toolbar">
+          <div class="filter-bar" id="fahrten-filter" style="margin-bottom:0;">
+            <input type="search" id="fahrten-search" placeholder="Suche nach Reiseziel / Mannschaft / Kennzeichen…" />
+            <select id="fahrten-fahrer" class="editor-only hidden"><option value="">Alle Fahrer</option></select>
+            <span class="filter-count" id="fahrten-count"></span>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn small success" id="btn-new-fahrt">+ Neue Fahrt</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="list-rows" id="fahrten-list"></div>
+          <div class="empty-state hidden" id="fahrten-empty">Noch keine Fahrten erfasst — oben „+ Neue Fahrt“ anlegen.</div>
+        </div>
+      </section>
+
+      <!-- ---------- Führerschein ---------- -->
+      <section class="tab-section" id="tab-fuehrerschein">
+        <div class="card">
+          <h2>Meine Führerschein-Kopie</h2>
+          <p class="muted" style="margin-bottom:14px;">Pro Saison ist einmalig eine Kopie der Fahrerlaubnis zu hinterlegen. Aktuelle Saison: <strong id="fs-saison">—</strong>.</p>
+          <div id="fs-eigen"></div>
+          <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+            <button class="btn small" id="btn-fs-upload">Führerschein-Kopie hochladen…</button>
+            <input type="file" id="fs-file-input" accept="image/*,application/pdf" class="hidden" />
+          </div>
+        </div>
+        <div class="card editor-only hidden">
+          <h2>Register (Admin &amp; berechtigte Gruppe)</h2>
+          <p class="muted" style="margin-bottom:14px;">Wer hat für welche Saison eine Führerschein-Kopie hinterlegt?</p>
+          <div class="table-scroll">
+            <table class="data-table" id="fs-register">
+              <thead><tr><th>Saison</th><th>Fahrer</th><th>Hochgeladen</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state hidden" id="fs-register-empty">Noch keine Führerschein-Kopien hinterlegt.</div>
+        </div>
+      </section>
+
+      <!-- ---------- Einstellungen ---------- -->
+      <section class="tab-section" id="tab-einstellungen">
+        <div class="card">
+          <h2>Saison</h2>
+          <p class="muted" style="margin-bottom:10px;">Die aktuelle Saison bestimmt, für welchen Zeitraum die Führerschein-Kopien gelten.</p>
+          <div class="form-grid">
+            <div class="form-field"><label>Aktuelle Saison</label><input type="text" id="set-saison" placeholder="z. B. 2026/27" /></div>
+          </div>
+          <div class="btn-row editor-only hidden" style="justify-content:flex-start;margin-top:6px;">
+            <button class="btn small success" id="btn-save-saison">Saison speichern</button>
+          </div>
+          <p class="muted editor-only hidden" id="set-saison-hint" style="margin-top:6px;"></p>
+        </div>
+        <div class="card">
+          <h2>Info <span class="version-badge" id="version-badge-2"></span></h2>
+          <div class="form-grid" id="meta-view"></div>
+          <p class="muted" id="einstellungen-user" style="margin-top:10px;"></p>
+        </div>
+        <div class="card">
+          <h2>Änderungen</h2>
+          <div id="changelog-list"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ---------- Fahrt-Formular (großes Modal) ---------- -->
+  <div class="modal-overlay hidden" id="fahrt-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="fahrt-modal-title">Neue Fahrt</h2>
+        <button class="modal-close" id="fahrt-modal-close" aria-label="Schließen">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="fahrt-form" autocomplete="off">
+
+          <fieldset class="form-fieldset">
+            <legend>Fahrzeug &amp; Fahrt</legend>
+            <div class="form-grid">
+              <div class="form-field"><label>Kennzeichen</label><input type="text" id="ff-kennzeichen" placeholder="z. B. EIC-SC 191" /></div>
+              <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="ff-fahrer" /></div>
+              <div class="form-field"><label>Abteilung / Mannschaft</label><input type="text" id="ff-abteilung" placeholder="z. B. C-Jugend" /></div>
+              <div class="form-field"><label>Anzahl der Insassen</label><input type="number" id="ff-insassen" min="0" inputmode="numeric" /></div>
+              <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="ff-reiseziel" placeholder="z. B. Mühlhausen" /></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Kilometerstand</legend>
+            <div class="form-grid">
+              <div class="form-field"><label>Start</label><input type="number" id="ff-kmstart" min="0" inputmode="numeric" /></div>
+              <div class="form-field"><label>Ende</label><input type="number" id="ff-kmende" min="0" inputmode="numeric" /></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Datum &amp; Uhrzeit</legend>
+            <div class="form-grid">
+              <div class="form-field"><label>Datum Start</label><input type="date" id="ff-datumstart" /></div>
+              <div class="form-field"><label>Uhrzeit Start</label><input type="time" id="ff-uhrzeitstart" /></div>
+              <div class="form-field"><label>Datum Ende</label><input type="date" id="ff-datumende" /></div>
+              <div class="form-field"><label>Uhrzeit Ende</label><input type="time" id="ff-uhrzeitende" /></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Übernahme / Übergabe</legend>
+            <div class="form-grid">
+              <div class="form-field"><label>Übernahme von</label><input type="text" id="ff-uebernahme" /></div>
+              <div class="form-field"><label>Abholort</label><input type="text" id="ff-abholort" /></div>
+              <div class="form-field"><label>Übergabe an</label><input type="text" id="ff-uebergabe" /></div>
+              <div class="form-field"><label>Abstellort</label><input type="text" id="ff-abstellort" /></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Anforderungen an den Fahrer</legend>
+            <div class="check-col" id="ff-anforderungen"></div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Fahrzeugkontrolle vor der Fahrt</legend>
+            <div class="check-col" id="ff-kontrolle-vor"></div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Mängel / Beschädigungen</legend>
+            <div class="form-field wide">
+              <textarea id="ff-maengel" rows="3" placeholder="Beschädigungen beschreiben (falls vorhanden)…"></textarea>
+            </div>
+            <label class="mini-label">Fotos</label>
+            <div class="foto-list" id="ff-foto-list"></div>
+            <div class="btn-row" style="justify-content:flex-start;margin-top:8px;">
+              <button type="button" class="btn small secondary" id="btn-foto-upload">Foto hinzufügen…</button>
+              <input type="file" id="ff-foto-input" accept="image/*" multiple class="hidden" />
+            </div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Nach der Fahrt</legend>
+            <div class="check-col" id="ff-kontrolle-nach"></div>
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Unterschrift des Fahrers</legend>
+            <div class="signature-wrap">
+              <canvas id="ff-signature" class="signature-canvas"></canvas>
+            </div>
+            <div class="btn-row" style="justify-content:flex-start;margin-top:6px;">
+              <button type="button" class="btn small secondary" id="btn-signature-clear">Unterschrift löschen</button>
+            </div>
+          </fieldset>
+
+          <p class="muted hinweis-box">ℹ️ <span id="ff-hinweis"></span></p>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn danger hidden" id="btn-delete-fahrt">Löschen</button>
+        <div class="btn-row">
+          <button class="btn secondary" id="btn-cancel-fahrt">Abbrechen</button>
+          <button class="btn" id="btn-save-fahrt-offen">Zwischenspeichern</button>
+          <button class="btn success" id="btn-save-fahrt-abschluss">Fahrt abschließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- Bild-/Datei-Viewer ---------- -->
+  <div class="modal-overlay hidden" id="viewer-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="viewer-title">Datei</h2>
+        <button class="modal-close" id="viewer-close" aria-label="Schließen">×</button>
+      </div>
+      <div class="modal-body" id="viewer-body" style="text-align:center;">
+        <p class="muted" id="viewer-loading">Wird geladen…</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js?v=1.0"></script>
+  <script src="db.js?v=1.0"></script>
+  <script src="signature-pad.js?v=1.0"></script>
+  <script src="app.js?v=1.0"></script>
+</body>
+</html>
