@@ -26,6 +26,15 @@ function fmtTimestamp(iso) {
   const d = new Date(iso);
   return isNaN(d.getTime()) ? "—" : d.toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" });
 }
+function fmtDate(d) {
+  if (!(d instanceof Date) || isNaN(d.getTime())) return "—";
+  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+function addMonths(date, n) {
+  const d = new Date(date.getTime());
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
 
 const STATUS_LABEL = { offen: "offen", abgeschlossen: "abgeschlossen" };
 const STATUS_FARBE = { offen: "#c9941f", abgeschlossen: "#2d8c4e" };
@@ -84,7 +93,6 @@ function normalizeFsEintrag(e) {
     id: d.id || uuid(),
     username: typeof d.username === "string" ? d.username : "",
     fahrerName: typeof d.fahrerName === "string" ? d.fahrerName : "",
-    saison: typeof d.saison === "string" ? d.saison : "",
     dateiId: String(d.dateiId),
     dateiName: typeof d.dateiName === "string" ? d.dateiName : "Führerschein",
     contentType: typeof d.contentType === "string" ? d.contentType : "",
@@ -94,7 +102,6 @@ function normalizeFsEintrag(e) {
 function normalizeData(data) {
   const d = data && typeof data === "object" ? data : {};
   const meta = d.meta && typeof d.meta === "object" ? Object.assign({}, d.meta) : {};
-  if (!meta.aktuelleSaison) meta.aktuelleSaison = DEFAULT_SAISON;
   return {
     meta,
     fahrten: Array.isArray(d.fahrten) ? d.fahrten.map(normalizeFahrt) : [],
@@ -111,6 +118,23 @@ function myName() {
   return n || currentUser.username || "";
 }
 function canManageFahrt(fahrt) { return canEdit() || (fahrt.erstelltVon && fahrt.erstelltVon === myUsername()); }
+// Einsicht ins Führerschein-Register (alle Kopien): Admin + Gruppe „Führerschein Einsicht".
+function canViewLicenses() {
+  if (!currentUser) return false;
+  if (currentUser.isAdmin) return true;
+  return Array.isArray(currentUser.groupIds) && currentUser.groupIds.includes(FS_VIEW_GROUP_ID);
+}
+
+// ---------- Führerschein: 6-Monats-Gültigkeit ----------
+function fsFaelligAm(entry) {
+  if (!entry || !entry.hochgeladenAm) return null;
+  const d = new Date(entry.hochgeladenAm);
+  return isNaN(d.getTime()) ? null : addMonths(d, FUEHRERSCHEIN_GUELTIGKEIT_MONATE);
+}
+function fsIstGueltig(entry) {
+  const f = fsFaelligAm(entry);
+  return !!f && f.getTime() > Date.now();
+}
 
 // ---------- Fahrten-Liste ----------
 function visibleFahrten() {
@@ -333,30 +357,47 @@ function closeViewer() {
 }
 
 // ---------- Führerschein ----------
-function currentSaison() { return (appData.meta && appData.meta.aktuelleSaison) || DEFAULT_SAISON; }
+function fsStatusBadge(entry) {
+  const f = fsFaelligAm(entry);
+  if (!f) return `<span class="fs-badge due">unbekannt</span>`;
+  return f.getTime() > Date.now()
+    ? `<span class="fs-badge ok">gültig</span>`
+    : `<span class="fs-badge due">abgelaufen</span>`;
+}
 function renderFuehrerschein() {
-  document.getElementById("fs-saison").textContent = currentSaison();
-  const mine = appData.fuehrerschein.find((e) => e.username === myUsername() && e.saison === currentSaison());
+  const mine = appData.fuehrerschein.find((e) => e.username === myUsername());
   const eigen = document.getElementById("fs-eigen");
   if (mine) {
-    eigen.innerHTML = `<div class="fs-status ok">✅ Für ${escapeHtml(currentSaison())} hinterlegt:
+    const faellig = fsFaelligAm(mine);
+    const gueltig = fsIstGueltig(mine);
+    const statusText = gueltig
+      ? `✅ Gültig bis ${escapeHtml(fmtDate(faellig))}`
+      : `⚠️ Abgelaufen — seit ${escapeHtml(fmtDate(faellig))} erneut fällig. Bitte neu einreichen.`;
+    eigen.innerHTML = `<div class="fs-status ${gueltig ? "ok" : "due"}">
+      <span>${statusText}</span>
       <button type="button" class="foto-view" data-view-fs="${escapeHtml(mine.dateiId)}" data-name="${escapeHtml(mine.dateiName)}" data-ct="${escapeHtml(mine.contentType)}">${escapeHtml(mine.dateiName)}</button>
-      <span class="muted">(${escapeHtml(fmtTimestamp(mine.hochgeladenAm))})</span>
-      <button type="button" class="btn small danger" data-del-fs="${escapeHtml(mine.id)}" style="margin-left:8px;">Löschen</button></div>`;
+      <span class="muted">eingereicht ${escapeHtml(fmtTimestamp(mine.hochgeladenAm))}</span>
+      <button type="button" class="btn small danger" data-del-fs="${escapeHtml(mine.id)}" style="margin-left:auto;">Löschen</button></div>`;
   } else {
-    eigen.innerHTML = `<div class="fs-status">⚠️ Für ${escapeHtml(currentSaison())} ist noch keine Führerschein-Kopie hinterlegt.</div>`;
+    eigen.innerHTML = `<div class="fs-status due"><span>⚠️ Noch keine Führerschein-Kopie eingereicht.</span></div>`;
   }
   document.getElementById("btn-fs-upload").textContent = mine ? "Datei ersetzen…" : "Datei / Galerie wählen…";
   document.getElementById("btn-fs-camera").textContent = mine ? "📷 Neu aufnehmen" : "📷 Foto aufnehmen";
 
-  // Register (nur Bearbeiter/Admin)
-  const tbody = document.querySelector("#fs-register tbody");
-  if (!tbody) return;
-  const list = appData.fuehrerschein.slice().sort((a, b) => (b.saison || "").localeCompare(a.saison || "") || (a.fahrerName || "").localeCompare(b.fahrerName || ""));
-  tbody.innerHTML = list.map((e) => `<tr>
-    <td>${escapeHtml(e.saison)}</td>
+  // Register — NUR für Admin + Gruppe „Führerschein Einsicht".
+  const card = document.getElementById("fs-register-card");
+  const mayView = canViewLicenses();
+  card.classList.toggle("hidden", !mayView);
+  if (!mayView) return;
+  const list = appData.fuehrerschein.slice().sort((a, b) => {
+    const fa = fsFaelligAm(a), fb = fsFaelligAm(b);
+    return (fa ? fa.getTime() : Infinity) - (fb ? fb.getTime() : Infinity) || (a.fahrerName || "").localeCompare(b.fahrerName || "");
+  });
+  document.querySelector("#fs-register tbody").innerHTML = list.map((e) => `<tr>
     <td class="strong">${escapeHtml(e.fahrerName || e.username)}</td>
     <td>${escapeHtml(fmtTimestamp(e.hochgeladenAm))}</td>
+    <td>${escapeHtml(fmtDate(fsFaelligAm(e)))}</td>
+    <td>${fsStatusBadge(e)}</td>
     <td class="num">
       <button type="button" class="foto-view" data-view-fs="${escapeHtml(e.dateiId)}" data-name="${escapeHtml(e.dateiName)}" data-ct="${escapeHtml(e.contentType)}">ansehen</button>
       <button type="button" class="icon-btn" data-del-fs="${escapeHtml(e.id)}" title="Löschen">×</button>
@@ -372,9 +413,9 @@ async function uploadFuehrerschein(file) {
   const newId = uuid();
   try {
     await gatewayUploadFile(newId, file, file.name, file.type || "application/octet-stream");
-    let entry = appData.fuehrerschein.find((e) => e.username === myUsername() && e.saison === currentSaison());
+    let entry = appData.fuehrerschein.find((e) => e.username === myUsername());
     const oldFileId = entry ? entry.dateiId : null;
-    if (!entry) { entry = { id: uuid(), username: myUsername(), saison: currentSaison() }; appData.fuehrerschein.push(entry); }
+    if (!entry) { entry = { id: uuid(), username: myUsername() }; appData.fuehrerschein.push(entry); }
     entry.fahrerName = myName();
     entry.dateiId = newId;
     entry.dateiName = file.name;
@@ -393,7 +434,7 @@ async function uploadFuehrerschein(file) {
 async function deleteFuehrerschein(entryId) {
   const entry = appData.fuehrerschein.find((e) => e.id === entryId);
   if (!entry) return;
-  if (!(canEdit() || entry.username === myUsername())) { alert("Nur der eigene Eintrag oder Admin/Bearbeiter."); return; }
+  if (!(canViewLicenses() || entry.username === myUsername())) { alert("Nur der eigene Eintrag oder berechtigte Nutzer."); return; }
   if (!confirm("Diese Führerschein-Kopie wirklich löschen?")) return;
   gatewayDeleteFile(entry.dateiId).catch(() => {});
   appData.fuehrerschein = appData.fuehrerschein.filter((e) => e.id !== entryId);
@@ -402,27 +443,16 @@ async function deleteFuehrerschein(entryId) {
 }
 
 // ---------- Einstellungen / Meta / Nutzer ----------
-function saveSaison() {
-  if (!canEdit()) return;
-  const s = val("set-saison").trim();
-  if (!s) { alert("Bitte eine Saison angeben."); return; }
-  appData.meta.aktuelleSaison = s;
-  document.getElementById("set-saison-hint").textContent = "Gespeichert.";
-  persist();
-  renderFuehrerschein();
-  renderMeta();
-}
 function renderMeta() {
   const m = appData.meta || {};
+  const gueltige = appData.fuehrerschein.filter(fsIstGueltig).length;
   const rows = [
-    ["Aktuelle Saison", currentSaison()],
     ["Fahrten erfasst", String(appData.fahrten.length)],
-    ["Führerschein-Kopien", String(appData.fuehrerschein.length)],
+    ["Führerschein-Kopien", `${gueltige} gültig / ${appData.fuehrerschein.length} gesamt`],
     ["Letzter Stand", m.stand ? new Date(m.stand).toLocaleString("de-DE") : "—"]
   ];
   document.getElementById("meta-view").innerHTML = rows.map(([k, v]) =>
     `<div class="form-field"><label>${escapeHtml(k)}</label><span>${escapeHtml(v)}</span></div>`).join("");
-  setVal("set-saison", currentSaison());
 }
 function renderVersionInfo() {
   document.querySelectorAll("#version-badge, #version-badge-2, #version-badge-nav").forEach((el) => { if (el) el.textContent = "v" + APP_VERSION; });
@@ -588,9 +618,6 @@ function setupListeners() {
     const del = e.target.closest("[data-del-fs]");
     if (del) deleteFuehrerschein(del.dataset.delFs);
   });
-
-  // Einstellungen
-  document.getElementById("btn-save-saison").addEventListener("click", saveSaison);
 
   // Viewer
   document.getElementById("viewer-close").addEventListener("click", closeViewer);

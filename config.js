@@ -1,8 +1,13 @@
-const APP_VERSION = "1.1";
+const APP_VERSION = "1.2";
 
-// Startsaison, falls im Gateway noch nichts liegt bzw. der Admin noch keine gesetzt hat.
-// Fußball-Saison läuft Sommer–Sommer; die Führerschein-Kopie ist 1× pro Saison fällig.
-const DEFAULT_SAISON = "2026/27";
+// Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
+// 6 Monate erneut einzureichen.
+const FUEHRERSCHEIN_GUELTIGKEIT_MONATE = 6;
+
+// Gruppe, deren Mitglieder (plus Admin) die eingereichten Führerschein-Kopien ALLER
+// Fahrer im Register einsehen dürfen. Der Slug muss zum im Admin-Panel angelegten
+// Gruppennamen passen — „Führerschein Einsicht“ ergibt fuehrerschein-einsicht.
+const FS_VIEW_GROUP_ID = "fuehrerschein-einsicht";
 
 // Größenlimit pro hochgeladener Datei (Schadensfoto / Führerschein-Kopie) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
@@ -11,7 +16,7 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 // Checklisten-Gruppen des Fahrer-Protokolls (1:1 aus der Papiervorlage). Jeder Eintrag
 // { key, label } wird als Checkbox gerendert; key ist zugleich das Feld im Fahrt-Datensatz.
 const ANFORDERUNGEN = [
-  { key: "chkFuehrerschein", label: "Besitz eines gültigen Führerscheins (Kopie der Fahrerlaubnis 1× pro Saison in die SCH-Cloud hochladen — Tab „Führerschein“)" },
+  { key: "chkFuehrerschein", label: "Besitz eines gültigen Führerscheins (Kopie der Fahrerlaubnis alle 6 Monate in die SCH-Cloud hochladen — Tab „Führerschein“)" },
   { key: "chkMindestalter", label: "Mindestalter des Fahrers: 23 Jahre" },
   { key: "chkKeinAlkohol", label: "Kein Alkohol- oder Drogenkonsum vor und während der Fahrzeugnutzung" }
 ];
@@ -41,6 +46,18 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.2",
+    groups: [
+      {
+        title: "Führerschein",
+        items: [
+          "Die Führerschein-Kopie muss nach der ersten Einreichung alle 6 Monate erneuert werden — die App zeigt „gültig bis …“ bzw. „abgelaufen, bitte neu einreichen“.",
+          "Die eingereichten Kopien sind nur noch für Admin und die Gruppe „Führerschein Einsicht“ einsehbar; jeder Fahrer sieht weiterhin seine eigene."
+        ]
+      }
+    ]
+  },
   {
     version: "1.1",
     groups: [

@@ -61,7 +61,7 @@
       <section class="tab-section" id="tab-fuehrerschein">
         <div class="card">
           <h2>Meine Führerschein-Kopie</h2>
-          <p class="muted" style="margin-bottom:14px;">Pro Saison ist einmalig eine Kopie der Fahrerlaubnis zu hinterlegen. Aktuelle Saison: <strong id="fs-saison">—</strong>.</p>
+          <p class="muted" style="margin-bottom:14px;">Die Kopie der Fahrerlaubnis ist nach der ersten Einreichung <strong>alle 6 Monate</strong> zu erneuern.</p>
           <div id="fs-eigen"></div>
           <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
             <button class="btn small" id="btn-fs-camera">📷 Foto aufnehmen</button>
@@ -71,12 +71,12 @@
           </div>
           <p class="muted" style="margin-top:8px;">📷 nimmt am Handy direkt ein Foto mit der Kamera auf; „Datei / Galerie“ erlaubt ein vorhandenes Bild oder eine PDF.</p>
         </div>
-        <div class="card editor-only hidden">
-          <h2>Register (Admin &amp; berechtigte Gruppe)</h2>
-          <p class="muted" style="margin-bottom:14px;">Wer hat für welche Saison eine Führerschein-Kopie hinterlegt?</p>
+        <div class="card hidden" id="fs-register-card">
+          <h2>Register (Admin &amp; Gruppe „Führerschein Einsicht“)</h2>
+          <p class="muted" style="margin-bottom:14px;">Wer hat eine gültige Führerschein-Kopie hinterlegt? Nur für berechtigte Nutzer sichtbar.</p>
           <div class="table-scroll">
             <table class="data-table" id="fs-register">
-              <thead><tr><th>Saison</th><th>Fahrer</th><th>Hochgeladen</th><th></th></tr></thead>
+              <thead><tr><th>Fahrer</th><th>Eingereicht</th><th>Gültig bis</th><th>Status</th><th></th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -86,17 +86,6 @@
 
       <!-- ---------- Einstellungen ---------- -->
       <section class="tab-section" id="tab-einstellungen">
-        <div class="card">
-          <h2>Saison</h2>
-          <p class="muted" style="margin-bottom:10px;">Die aktuelle Saison bestimmt, für welchen Zeitraum die Führerschein-Kopien gelten.</p>
-          <div class="form-grid">
-            <div class="form-field"><label>Aktuelle Saison</label><input type="text" id="set-saison" placeholder="z. B. 2026/27" /></div>
-          </div>
-          <div class="btn-row editor-only hidden" style="justify-content:flex-start;margin-top:6px;">
-            <button class="btn small success" id="btn-save-saison">Saison speichern</button>
-          </div>
-          <p class="muted editor-only hidden" id="set-saison-hint" style="margin-top:6px;"></p>
-        </div>
         <div class="card">
           <h2>Info <span class="version-badge" id="version-badge-2"></span></h2>
           <div class="form-grid" id="meta-view"></div>
@@ -225,9 +214,9 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.1"></script>
+  <script src="config.js?v=1.2"></script>
   <script src="db.js?v=1.0"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.1"></script>
+  <script src="app.js?v=1.2"></script>
 </body>
 </html>
