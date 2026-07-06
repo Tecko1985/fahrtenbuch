@@ -64,9 +64,12 @@
           <p class="muted" style="margin-bottom:14px;">Pro Saison ist einmalig eine Kopie der Fahrerlaubnis zu hinterlegen. Aktuelle Saison: <strong id="fs-saison">—</strong>.</p>
           <div id="fs-eigen"></div>
           <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
-            <button class="btn small" id="btn-fs-upload">Führerschein-Kopie hochladen…</button>
+            <button class="btn small" id="btn-fs-camera">📷 Foto aufnehmen</button>
+            <button class="btn small secondary" id="btn-fs-upload">Datei / Galerie wählen…</button>
+            <input type="file" id="fs-camera-input" accept="image/*" capture="environment" class="hidden" />
             <input type="file" id="fs-file-input" accept="image/*,application/pdf" class="hidden" />
           </div>
+          <p class="muted" style="margin-top:8px;">📷 nimmt am Handy direkt ein Foto mit der Kamera auf; „Datei / Galerie“ erlaubt ein vorhandenes Bild oder eine PDF.</p>
         </div>
         <div class="card editor-only hidden">
           <h2>Register (Admin &amp; berechtigte Gruppe)</h2>
@@ -222,9 +225,9 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.0"></script>
+  <script src="config.js?v=1.1"></script>
   <script src="db.js?v=1.0"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.0"></script>
+  <script src="app.js?v=1.1"></script>
 </body>
 </html>

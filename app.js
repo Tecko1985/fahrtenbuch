@@ -346,7 +346,8 @@ function renderFuehrerschein() {
   } else {
     eigen.innerHTML = `<div class="fs-status">⚠️ Für ${escapeHtml(currentSaison())} ist noch keine Führerschein-Kopie hinterlegt.</div>`;
   }
-  document.getElementById("btn-fs-upload").textContent = mine ? "Kopie ersetzen…" : "Führerschein-Kopie hochladen…";
+  document.getElementById("btn-fs-upload").textContent = mine ? "Datei ersetzen…" : "Datei / Galerie wählen…";
+  document.getElementById("btn-fs-camera").textContent = mine ? "📷 Neu aufnehmen" : "📷 Foto aufnehmen";
 
   // Register (nur Bearbeiter/Admin)
   const tbody = document.querySelector("#fs-register tbody");
@@ -365,8 +366,9 @@ function renderFuehrerschein() {
 async function uploadFuehrerschein(file) {
   if (!file) return;
   if (file.size > MAX_FILE_BYTES) { alert(`Datei ist zu groß (max. ${Math.round(MAX_FILE_BYTES / 1024 / 1024)} MB).`); return; }
-  const btn = document.getElementById("btn-fs-upload");
-  btn.disabled = true; const prev = btn.textContent; btn.textContent = "Lädt hoch…";
+  const camBtn = document.getElementById("btn-fs-camera");
+  const fileBtn = document.getElementById("btn-fs-upload");
+  camBtn.disabled = true; fileBtn.disabled = true; fileBtn.textContent = "Lädt hoch…";
   const newId = uuid();
   try {
     await gatewayUploadFile(newId, file, file.name, file.type || "application/octet-stream");
@@ -378,14 +380,14 @@ async function uploadFuehrerschein(file) {
     entry.dateiName = file.name;
     entry.contentType = file.type || "";
     entry.hochgeladenAm = new Date().toISOString();
-    renderFuehrerschein();
     await saveNow();
     if (oldFileId && oldFileId !== newId) gatewayDeleteFile(oldFileId).catch(() => {});
   } catch (e) {
     gatewayDeleteFile(newId).catch(() => {});
     alert("Upload fehlgeschlagen: " + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = prev;
+    camBtn.disabled = false; fileBtn.disabled = false;
+    renderFuehrerschein(); // setzt die Button-Labels/Status anhand des aktuellen Stands neu
   }
 }
 async function deleteFuehrerschein(entryId) {
@@ -578,6 +580,8 @@ function setupListeners() {
   // Führerschein
   document.getElementById("btn-fs-upload").addEventListener("click", () => document.getElementById("fs-file-input").click());
   document.getElementById("fs-file-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
+  document.getElementById("btn-fs-camera").addEventListener("click", () => document.getElementById("fs-camera-input").click());
+  document.getElementById("fs-camera-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
   document.getElementById("tab-fuehrerschein").addEventListener("click", (e) => {
     const vw = e.target.closest("[data-view-fs]");
     if (vw) { viewFile(vw.dataset.viewFs, vw.dataset.name, vw.dataset.ct); return; }

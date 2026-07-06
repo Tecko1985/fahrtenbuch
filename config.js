@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
 // Startsaison, falls im Gateway noch nichts liegt bzw. der Admin noch keine gesetzt hat.
 // Fußball-Saison läuft Sommer–Sommer; die Führerschein-Kopie ist 1× pro Saison fällig.
@@ -41,6 +41,17 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.1",
+    groups: [
+      {
+        title: "Führerschein",
+        items: [
+          "Die Führerschein-Kopie lässt sich am Handy jetzt direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) — alternativ weiterhin eine vorhandene Datei bzw. PDF aus Galerie/Dateien wählen."
+        ]
+      }
+    ]
+  },
   {
     version: "1.0",
     groups: [
