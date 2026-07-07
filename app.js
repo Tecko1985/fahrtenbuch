@@ -480,7 +480,10 @@ async function exportFuehrerscheinePdf() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+    // Verzögert freigeben: sofortiges revoke direkt nach click() bricht den Download
+    // auf manchen (v.a. mobilen) Browsern ab — gleiche Konvention wie download() in
+    // den Schwester-Apps.
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
     if (fehler.length) alert("PDF erstellt, aber nicht alle Kopien konnten eingefügt werden:\n\n" + fehler.join("\n"));
   } catch (e) {
     alert("PDF-Export fehlgeschlagen: " + e.message);
