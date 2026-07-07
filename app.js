@@ -88,12 +88,14 @@ function normalizeFahrt(f) {
 }
 function normalizeFsEintrag(e) {
   const d = e && typeof e === "object" ? e : {};
-  if (!d.dateiId) return null;
+  // Die Datei ist serverseitig unter dem Nutzernamen abgelegt (abgeschotteter Bereich) —
+  // der Nutzername ist zugleich der Zugriffsschlüssel, es gibt keine separate dateiId mehr.
+  const username = typeof d.username === "string" ? d.username : "";
+  if (!username) return null;
   return {
     id: d.id || uuid(),
-    username: typeof d.username === "string" ? d.username : "",
+    username,
     fahrerName: typeof d.fahrerName === "string" ? d.fahrerName : "",
-    dateiId: String(d.dateiId),
     dateiName: typeof d.dateiName === "string" ? d.dateiName : "Führerschein",
     contentType: typeof d.contentType === "string" ? d.contentType : "",
     hochgeladenAm: typeof d.hochgeladenAm === "string" ? d.hochgeladenAm : ""
@@ -327,14 +329,16 @@ function removeFotoFromEditing(id) {
 }
 
 // ---------- Datei-Viewer ----------
-async function viewFile(id, name, contentType) {
+// Gemeinsame Anzeige; der Blob-Bezug ist austauschbar: Mängel-Fotos über den offenen
+// dateien/-Bereich, Führerschein-Kopien über den abgeschotteten (Server prüft das Recht).
+async function showInViewer(name, contentType, getBlob) {
   const modal = document.getElementById("viewer-modal");
   const body = document.getElementById("viewer-body");
   document.getElementById("viewer-title").textContent = name || "Datei";
   body.innerHTML = `<p class="muted" id="viewer-loading">Wird geladen…</p>`;
   modal.classList.remove("hidden");
   try {
-    const blob = await gatewayFetchFileBlob(id);
+    const blob = await getBlob();
     const url = URL.createObjectURL(blob);
     modal.dataset.objurl = url;
     const ct = contentType || blob.type || "";
@@ -349,6 +353,10 @@ async function viewFile(id, name, contentType) {
     body.innerHTML = `<p class="muted">Datei nicht abrufbar: ${escapeHtml(e.message)}</p>`;
   }
 }
+// Mängel-Foto (offener dateien/-Ordner, nur Tool-Zugriff nötig).
+function viewFile(id, name, contentType) { return showInViewer(name, contentType, () => gatewayFetchFileBlob(id)); }
+// Führerschein-Kopie (abgeschottet; owner = Nutzername des Eigentümers).
+function viewLicenseFile(owner, name, contentType) { return showInViewer(name, contentType, () => gatewayFetchRestrictedBlob(owner)); }
 function closeViewer() {
   const modal = document.getElementById("viewer-modal");
   modal.classList.add("hidden");
@@ -375,7 +383,7 @@ function renderFuehrerschein() {
       : `⚠️ Abgelaufen — seit ${escapeHtml(fmtDate(faellig))} erneut fällig. Bitte neu einreichen.`;
     eigen.innerHTML = `<div class="fs-status ${gueltig ? "ok" : "due"}">
       <span>${statusText}</span>
-      <button type="button" class="foto-view" data-view-fs="${escapeHtml(mine.dateiId)}" data-name="${escapeHtml(mine.dateiName)}" data-ct="${escapeHtml(mine.contentType)}">${escapeHtml(mine.dateiName)}</button>
+      <button type="button" class="foto-view" data-view-fs="${escapeHtml(mine.username)}" data-name="${escapeHtml(mine.dateiName)}" data-ct="${escapeHtml(mine.contentType)}">${escapeHtml(mine.dateiName)}</button>
       <span class="muted">eingereicht ${escapeHtml(fmtTimestamp(mine.hochgeladenAm))}</span>
       <button type="button" class="btn small danger" data-del-fs="${escapeHtml(mine.id)}" style="margin-left:auto;">Löschen</button></div>`;
   } else {
@@ -399,7 +407,7 @@ function renderFuehrerschein() {
     <td>${escapeHtml(fmtDate(fsFaelligAm(e)))}</td>
     <td>${fsStatusBadge(e)}</td>
     <td class="num">
-      <button type="button" class="foto-view" data-view-fs="${escapeHtml(e.dateiId)}" data-name="${escapeHtml(e.dateiName)}" data-ct="${escapeHtml(e.contentType)}">ansehen</button>
+      <button type="button" class="foto-view" data-view-fs="${escapeHtml(e.username)}" data-name="${escapeHtml(e.dateiName)}" data-ct="${escapeHtml(e.contentType)}">ansehen</button>
       <button type="button" class="icon-btn" data-del-fs="${escapeHtml(e.id)}" title="Löschen">×</button>
     </td></tr>`).join("");
   document.getElementById("fs-register-empty").classList.toggle("hidden", list.length > 0);
@@ -410,21 +418,18 @@ async function uploadFuehrerschein(file) {
   const camBtn = document.getElementById("btn-fs-camera");
   const fileBtn = document.getElementById("btn-fs-upload");
   camBtn.disabled = true; fileBtn.disabled = true; fileBtn.textContent = "Lädt hoch…";
-  const newId = uuid();
   try {
-    await gatewayUploadFile(newId, file, file.name, file.type || "application/octet-stream");
+    // Abgeschottet: der Server legt die Datei unter dem eigenen Nutzernamen ab (ein
+    // Re-Upload überschreibt die bisherige eigene Kopie — kein Aufräumen alter Ids nötig).
+    await gatewayUploadRestrictedFile(file, file.type || "application/octet-stream");
     let entry = appData.fuehrerschein.find((e) => e.username === myUsername());
-    const oldFileId = entry ? entry.dateiId : null;
     if (!entry) { entry = { id: uuid(), username: myUsername() }; appData.fuehrerschein.push(entry); }
     entry.fahrerName = myName();
-    entry.dateiId = newId;
     entry.dateiName = file.name;
     entry.contentType = file.type || "";
     entry.hochgeladenAm = new Date().toISOString();
     await saveNow();
-    if (oldFileId && oldFileId !== newId) gatewayDeleteFile(oldFileId).catch(() => {});
   } catch (e) {
-    gatewayDeleteFile(newId).catch(() => {});
     alert("Upload fehlgeschlagen: " + e.message);
   } finally {
     camBtn.disabled = false; fileBtn.disabled = false;
@@ -436,7 +441,7 @@ async function deleteFuehrerschein(entryId) {
   if (!entry) return;
   if (!(canViewLicenses() || entry.username === myUsername())) { alert("Nur der eigene Eintrag oder berechtigte Nutzer."); return; }
   if (!confirm("Diese Führerschein-Kopie wirklich löschen?")) return;
-  gatewayDeleteFile(entry.dateiId).catch(() => {});
+  gatewayDeleteRestrictedFile(entry.username).catch(() => {});
   appData.fuehrerschein = appData.fuehrerschein.filter((e) => e.id !== entryId);
   renderFuehrerschein();
   await saveNow();
@@ -614,7 +619,7 @@ function setupListeners() {
   document.getElementById("fs-camera-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
   document.getElementById("tab-fuehrerschein").addEventListener("click", (e) => {
     const vw = e.target.closest("[data-view-fs]");
-    if (vw) { viewFile(vw.dataset.viewFs, vw.dataset.name, vw.dataset.ct); return; }
+    if (vw) { viewLicenseFile(vw.dataset.viewFs, vw.dataset.name, vw.dataset.ct); return; }
     const del = e.target.closest("[data-del-fs]");
     if (del) deleteFuehrerschein(del.dataset.delFs);
   });

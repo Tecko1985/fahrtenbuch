@@ -1,4 +1,4 @@
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 // Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
 // 6 Monate erneut einzureichen.
@@ -46,6 +46,18 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.3",
+    groups: [
+      {
+        title: "Führerschein – echter Zugriffsschutz",
+        items: [
+          "Die eingereichten Führerschein-Kopien liegen jetzt in einem serverseitig abgeschotteten Bereich: das Gateway gibt eine Kopie nur noch an den Eigentümer selbst, an Admins und an die Gruppe „Führerschein Einsicht“ heraus — vorher wirkte die Beschränkung nur in der Oberfläche.",
+          "Die Datei wird unter dem Nutzernamen abgelegt (ein Dokument je Fahrer); ein erneuter Upload ersetzt die bisherige Kopie."
+        ]
+      }
+    ]
+  },
   {
     version: "1.2",
     groups: [

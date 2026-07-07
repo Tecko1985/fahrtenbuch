@@ -23,20 +23,28 @@ Live: https://tecko1985.github.io/fahrtenbuch/
   Die Einsicht in fremde Führerschein-Kopien ist davon getrennt und liegt allein bei
   Admin + Gruppe `fuehrerschein-einsicht` (jeder sieht immer seine eigene Kopie).
 
-> **Hinweis zur Vertraulichkeit:** Das Einsicht-Gate wirkt in der Oberfläche. Die Dateien
-> liegen im gemeinsamen Nextcloud-Ordner der App und sind über das Gateway technisch für
-> jeden mit Tool-Zugriff abrufbar, der die interne Datei-Id kennt — echte serverseitige
-> Abschottung würde einen Umbau am Gateway-Worker erfordern (wie bei allen Gateway-Apps).
+> **Vertraulichkeit der Führerschein-Kopien:** Die eingereichten Kopien liegen in einem
+> **serverseitig abgeschotteten** Bereich (`fuehrerscheine/`, abgelegt unter dem Nutzernamen).
+> Das Gateway liefert eine Kopie nur an den **Eigentümer selbst, an Admins und an die Gruppe
+> `fuehrerschein-einsicht`** aus — nicht an jeden, der Zugriff auf das Tool hat. Damit sind
+> die sensiblen Dokumente auch dann geschützt, wenn das Tool für „alle eingeloggten Nutzer“
+> freigegeben ist. Nur die reinen Metadaten (wer hat wann eingereicht, gültig bis) stehen
+> weiterhin in der gemeinsamen App-Datei. (Die Mängel-Fotos einer Fahrt liegen dagegen im
+> offenen `dateien/`-Bereich und sind für alle mit Tool-Zugriff abrufbar.)
 
 ## Architektur
 
 Vanilla JS, kein Build-Step. Persistenz über das zentrale ToolsUebersicht-Login-Gateway
 (`db.js`, `GATEWAY_APP_ID = "fahrtenbuch"`), Daten in Nextcloud unter
 `.../05_Nachwuchsbereich/02_Förderung/Tools/Fahrtenbuch/fahrtenbuch.json`.
-Fotos und Führerschein-Kopien liegen als Binärdateien im Unterordner `dateien/`
-(Gateway-Aktionen `dav-file-put`/`dav-file-get`/`dav-file-delete`, ≤ 10 MB je Datei);
-in der JSON stehen nur die Datei-Referenzen `{id, name, contentType}`. Die Unterschrift
-wird als kleine PNG-DataURL inline gespeichert.
+Mängel-Fotos liegen als Binärdateien im **offenen** Unterordner `dateien/`
+(Gateway-Aktionen `dav-file-put`/`dav-file-get`/`dav-file-delete`, ≤ 10 MB je Datei; in der
+JSON nur die Referenz `{id, name, contentType}`). Führerschein-Kopien liegen dagegen im
+**abgeschotteten** Unterordner `fuehrerscheine/`, abgelegt unter dem Nutzernamen, über die
+Aktionen `dav-restricted-put`/`dav-restricted-get`/`dav-restricted-delete`: der Worker gibt
+sie nur an Eigentümer/Admin/Gruppe `fuehrerschein-einsicht` heraus (serverseitig erzwungen,
+siehe `RESTRICTED_FILE_APPS` in `admin-worker.js`). Die Unterschrift wird als kleine
+PNG-DataURL inline gespeichert.
 
 Dateien: `index.html`, `app.js`, `config.js`, `db.js`, `signature-pad.js`, `style.css`,
 `logo.png`. `db.js` ist aus `digitaler-stempel` übernommen (nur App-Id angepasst),
