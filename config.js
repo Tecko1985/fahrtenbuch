@@ -1,4 +1,4 @@
-const APP_VERSION = "1.4";
+const APP_VERSION = "1.5";
 
 // Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
 // 6 Monate erneut einzureichen.
@@ -46,6 +46,17 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.5",
+    groups: [
+      {
+        title: "Führerschein",
+        items: [
+          "Neuer Knopf „Alle als PDF exportieren“ im Führerschein-Register: bündelt alle eingereichten Führerschein-Kopien (Fotos und PDFs) zu einem einzigen PDF-Dokument mit Deckblatt je Fahrer (Name, eingereicht am, gültig bis) zum Download."
+        ]
+      }
+    ]
+  },
   {
     version: "1.4",
     groups: [

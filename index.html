@@ -74,6 +74,9 @@
         <div class="card hidden" id="fs-register-card">
           <h2>Register (Admin &amp; Gruppe „Führerschein Einsicht“)</h2>
           <p class="muted" style="margin-bottom:14px;">Wer hat eine gültige Führerschein-Kopie hinterlegt? Nur für berechtigte Nutzer sichtbar.</p>
+          <div class="btn-row" style="justify-content:flex-start;margin-bottom:14px;">
+            <button type="button" class="btn small secondary" id="btn-fs-export">📄 Alle als PDF exportieren</button>
+          </div>
           <div class="table-scroll">
             <table class="data-table" id="fs-register">
               <thead><tr><th>Fahrer</th><th>Eingereicht</th><th>Gültig bis</th><th>Status</th><th></th></tr></thead>
@@ -214,9 +217,10 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.4"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="config.js?v=1.5"></script>
   <script src="db.js?v=1.3"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.4"></script>
+  <script src="app.js?v=1.5"></script>
 </body>
 </html>

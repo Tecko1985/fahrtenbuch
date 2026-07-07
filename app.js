@@ -411,6 +411,83 @@ function renderFuehrerschein() {
       <button type="button" class="icon-btn" data-del-fs="${escapeHtml(e.id)}" title="Löschen">×</button>
     </td></tr>`).join("");
   document.getElementById("fs-register-empty").classList.toggle("hidden", list.length > 0);
+  document.getElementById("btn-fs-export").disabled = list.length === 0;
+}
+// A4 in PDF-Punkten (72dpi), für Deckblätter und eingebettete Fotos.
+const PDF_PAGE = [595.28, 841.89];
+function pdfAddImagePage(doc, image) {
+  const [pw, ph] = PDF_PAGE;
+  const maxW = pw - 100, maxH = ph - 140;
+  const scale = Math.min(maxW / image.width, maxH / image.height, 1);
+  const w = image.width * scale, h = image.height * scale;
+  doc.addPage(PDF_PAGE).drawImage(image, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h });
+}
+async function exportFuehrerscheinePdf() {
+  const list = appData.fuehrerschein.slice().sort((a, b) => (a.fahrerName || a.username).localeCompare(b.fahrerName || b.username));
+  if (!list.length) return;
+  const btn = document.getElementById("btn-fs-export");
+  const prevLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Erstelle PDF…";
+  try {
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const out = await PDFDocument.create();
+    const font = await out.embedFont(StandardFonts.HelveticaBold);
+    const drawLabelPage = (lines) => {
+      const page = out.addPage(PDF_PAGE);
+      let y = 780;
+      lines.forEach((line, i) => {
+        page.drawText(line, { x: 50, y, size: i === 0 ? 18 : 12, font, color: rgb(0.1, 0.1, 0.1) });
+        y -= i === 0 ? 30 : 20;
+      });
+    };
+    drawLabelPage(["Führerschein-Register", `Export vom ${fmtDate(new Date())} · ${list.length} Fahrer`]);
+
+    const fehler = [];
+    for (const entry of list) {
+      const wer = entry.fahrerName || entry.username;
+      let bytes;
+      try {
+        const blob = await gatewayFetchRestrictedBlob(entry.username);
+        bytes = new Uint8Array(await blob.arrayBuffer());
+      } catch (e) {
+        fehler.push(`${wer} (Datei nicht abrufbar: ${e.message})`);
+        continue;
+      }
+      drawLabelPage([wer, `Eingereicht: ${fmtTimestamp(entry.hochgeladenAm)}`, `Gültig bis: ${fmtDate(fsFaelligAm(entry))} (${fsIstGueltig(entry) ? "gültig" : "abgelaufen"})`]);
+      const ct = (entry.contentType || "").toLowerCase();
+      try {
+        if (ct === "application/pdf") {
+          const src = await PDFDocument.load(bytes);
+          (await out.copyPages(src, src.getPageIndices())).forEach((p) => out.addPage(p));
+        } else if (ct === "image/png") {
+          pdfAddImagePage(out, await out.embedPng(bytes));
+        } else if (ct === "image/jpeg" || ct === "image/jpg") {
+          pdfAddImagePage(out, await out.embedJpg(bytes));
+        } else {
+          fehler.push(`${wer} (Dateiformat „${entry.contentType || "unbekannt"}“ wird nicht unterstützt)`);
+        }
+      } catch (e) {
+        fehler.push(`${wer} (Datei beschädigt oder nicht lesbar)`);
+      }
+    }
+
+    const pdfBytes = await out.save();
+    const url = URL.createObjectURL(new Blob([pdfBytes], { type: "application/pdf" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Fuehrerscheine-Export_${new Date().toISOString().slice(0, 10)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    if (fehler.length) alert("PDF erstellt, aber nicht alle Kopien konnten eingefügt werden:\n\n" + fehler.join("\n"));
+  } catch (e) {
+    alert("PDF-Export fehlgeschlagen: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
 }
 async function uploadFuehrerschein(file) {
   if (!file) return;
@@ -617,6 +694,7 @@ function setupListeners() {
   document.getElementById("fs-file-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
   document.getElementById("btn-fs-camera").addEventListener("click", () => document.getElementById("fs-camera-input").click());
   document.getElementById("fs-camera-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
+  document.getElementById("btn-fs-export").addEventListener("click", exportFuehrerscheinePdf);
   document.getElementById("tab-fuehrerschein").addEventListener("click", (e) => {
     const vw = e.target.closest("[data-view-fs]");
     if (vw) { viewLicenseFile(vw.dataset.viewFs, vw.dataset.name, vw.dataset.ct); return; }
