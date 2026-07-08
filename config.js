@@ -1,15 +1,6 @@
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
-// Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
-// 6 Monate erneut einzureichen.
-const FUEHRERSCHEIN_GUELTIGKEIT_MONATE = 6;
-
-// Gruppe, deren Mitglieder (plus Admin) die eingereichten Führerschein-Kopien ALLER
-// Fahrer im Register einsehen dürfen. Der Slug muss zum im Admin-Panel angelegten
-// Gruppennamen passen — „Führerschein Einsicht“ ergibt fuehrerschein-einsicht.
-const FS_VIEW_GROUP_ID = "fuehrerschein-einsicht";
-
-// Größenlimit pro hochgeladener Datei (Schadensfoto / Führerschein-Kopie) — muss zum
+// Größenlimit pro hochgeladener Datei (Schadensfoto) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -46,6 +37,18 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.1",
+    groups: [
+      {
+        title: "Führerschein-Register entfernt",
+        items: [
+          "Das Führerschein-Register (Upload, Ansehen, Sammel-PDF-Export) ist umgezogen zu Trainerdaten und hier entfernt — bereits eingereichte Kopien wurden einmalig übernommen.",
+          "Fahrtenbuch selbst (Fahrtenprotokoll, Checklisten, Mängel-Fotos, Unterschrift) ist unverändert."
+        ]
+      }
+    ]
+  },
   {
     version: "1.0",
     groups: [

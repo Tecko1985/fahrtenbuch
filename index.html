@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🚐 Fahrtenbuch</title>
 <meta name="theme-color" content="#1a56a0" />
-<link rel="stylesheet" href="style.css?v=1.0" />
+<link rel="stylesheet" href="style.css?v=1.1" />
 </head>
 <body>
 
@@ -33,7 +33,6 @@
 
     <nav>
       <button data-tab="fahrten" class="active">Fahrten</button>
-      <button data-tab="fuehrerschein">Führerschein</button>
       <button data-tab="einstellungen" style="margin-left:auto;">Einstellungen</button>
     </nav>
 
@@ -54,36 +53,6 @@
         <div class="card">
           <div class="list-rows" id="fahrten-list"></div>
           <div class="empty-state hidden" id="fahrten-empty">Noch keine Fahrten erfasst — oben „+ Neue Fahrt“ anlegen.</div>
-        </div>
-      </section>
-
-      <!-- ---------- Führerschein ---------- -->
-      <section class="tab-section" id="tab-fuehrerschein">
-        <div class="card">
-          <h2>Meine Führerschein-Kopie</h2>
-          <p class="muted" style="margin-bottom:14px;">Die Kopie der Fahrerlaubnis ist nach der ersten Einreichung <strong>alle 6 Monate</strong> zu erneuern.</p>
-          <div id="fs-eigen"></div>
-          <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
-            <button class="btn small" id="btn-fs-camera">📷 Foto aufnehmen</button>
-            <button class="btn small secondary" id="btn-fs-upload">Datei / Galerie wählen…</button>
-            <input type="file" id="fs-camera-input" accept="image/*" capture="environment" class="hidden" />
-            <input type="file" id="fs-file-input" accept="image/*,application/pdf" class="hidden" />
-          </div>
-          <p class="muted" style="margin-top:8px;">📷 nimmt am Handy direkt ein Foto mit der Kamera auf; „Datei / Galerie“ erlaubt ein vorhandenes Bild oder eine PDF.</p>
-        </div>
-        <div class="card hidden" id="fs-register-card">
-          <h2>Register (Admin &amp; Gruppe „Führerschein Einsicht“)</h2>
-          <p class="muted" style="margin-bottom:14px;">Wer hat eine gültige Führerschein-Kopie hinterlegt? Nur für berechtigte Nutzer sichtbar.</p>
-          <div class="btn-row" style="justify-content:flex-start;margin-bottom:14px;">
-            <button type="button" class="btn small secondary" id="btn-fs-export">📄 Alle als PDF exportieren</button>
-          </div>
-          <div class="table-scroll">
-            <table class="data-table" id="fs-register">
-              <thead><tr><th>Fahrer</th><th>Eingereicht</th><th>Gültig bis</th><th>Status</th><th></th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div class="empty-state hidden" id="fs-register-empty">Noch keine Führerschein-Kopien hinterlegt.</div>
         </div>
       </section>
 
@@ -217,10 +186,9 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <script src="config.js?v=1.0"></script>
-  <script src="db.js?v=1.0"></script>
-  <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.0"></script>
+  <script src="config.js?v=1.1"></script>
+  <script src="db.js?v=1.1"></script>
+  <script src="signature-pad.js?v=1.1"></script>
+  <script src="app.js?v=1.1"></script>
 </body>
 </html>

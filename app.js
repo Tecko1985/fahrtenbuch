@@ -30,17 +30,12 @@ function fmtDate(d) {
   if (!(d instanceof Date) || isNaN(d.getTime())) return "—";
   return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
-function addMonths(date, n) {
-  const d = new Date(date.getTime());
-  d.setMonth(d.getMonth() + n);
-  return d;
-}
 
 const STATUS_LABEL = { offen: "offen", abgeschlossen: "abgeschlossen" };
 const STATUS_FARBE = { offen: "#c9941f", abgeschlossen: "#2d8c4e" };
 
 // ---------- State ----------
-let appData = { meta: {}, fahrten: [], fuehrerschein: [] };
+let appData = { meta: {}, fahrten: [] };
 let currentUser = null;
 let currentTab = "fahrten";
 let persistTimer = null;
@@ -86,28 +81,12 @@ function normalizeFahrt(f) {
   ALLE_CHECK_KEYS.forEach((k) => { out[k] = !!d[k]; });
   return out;
 }
-function normalizeFsEintrag(e) {
-  const d = e && typeof e === "object" ? e : {};
-  // Die Datei ist serverseitig unter dem Nutzernamen abgelegt (abgeschotteter Bereich) —
-  // der Nutzername ist zugleich der Zugriffsschlüssel, es gibt keine separate dateiId mehr.
-  const username = typeof d.username === "string" ? d.username : "";
-  if (!username) return null;
-  return {
-    id: d.id || uuid(),
-    username,
-    fahrerName: typeof d.fahrerName === "string" ? d.fahrerName : "",
-    dateiName: typeof d.dateiName === "string" ? d.dateiName : "Führerschein",
-    contentType: typeof d.contentType === "string" ? d.contentType : "",
-    hochgeladenAm: typeof d.hochgeladenAm === "string" ? d.hochgeladenAm : ""
-  };
-}
 function normalizeData(data) {
   const d = data && typeof data === "object" ? data : {};
   const meta = d.meta && typeof d.meta === "object" ? Object.assign({}, d.meta) : {};
   return {
     meta,
-    fahrten: Array.isArray(d.fahrten) ? d.fahrten.map(normalizeFahrt) : [],
-    fuehrerschein: Array.isArray(d.fuehrerschein) ? d.fuehrerschein.map(normalizeFsEintrag).filter(Boolean) : []
+    fahrten: Array.isArray(d.fahrten) ? d.fahrten.map(normalizeFahrt) : []
   };
 }
 
@@ -120,23 +99,6 @@ function myName() {
   return n || currentUser.username || "";
 }
 function canManageFahrt(fahrt) { return canEdit() || (fahrt.erstelltVon && fahrt.erstelltVon === myUsername()); }
-// Einsicht ins Führerschein-Register (alle Kopien): Admin + Gruppe „Führerschein Einsicht".
-function canViewLicenses() {
-  if (!currentUser) return false;
-  if (currentUser.isAdmin) return true;
-  return Array.isArray(currentUser.groupIds) && currentUser.groupIds.includes(FS_VIEW_GROUP_ID);
-}
-
-// ---------- Führerschein: 6-Monats-Gültigkeit ----------
-function fsFaelligAm(entry) {
-  if (!entry || !entry.hochgeladenAm) return null;
-  const d = new Date(entry.hochgeladenAm);
-  return isNaN(d.getTime()) ? null : addMonths(d, FUEHRERSCHEIN_GUELTIGKEIT_MONATE);
-}
-function fsIstGueltig(entry) {
-  const f = fsFaelligAm(entry);
-  return !!f && f.getTime() > Date.now();
-}
 
 // ---------- Fahrten-Liste ----------
 function visibleFahrten() {
@@ -329,8 +291,6 @@ function removeFotoFromEditing(id) {
 }
 
 // ---------- Datei-Viewer ----------
-// Gemeinsame Anzeige; der Blob-Bezug ist austauschbar: Mängel-Fotos über den offenen
-// dateien/-Bereich, Führerschein-Kopien über den abgeschotteten (Server prüft das Recht).
 async function showInViewer(name, contentType, getBlob) {
   const modal = document.getElementById("viewer-modal");
   const body = document.getElementById("viewer-body");
@@ -355,8 +315,6 @@ async function showInViewer(name, contentType, getBlob) {
 }
 // Mängel-Foto (offener dateien/-Ordner, nur Tool-Zugriff nötig).
 function viewFile(id, name, contentType) { return showInViewer(name, contentType, () => gatewayFetchFileBlob(id)); }
-// Führerschein-Kopie (abgeschottet; owner = Nutzername des Eigentümers).
-function viewLicenseFile(owner, name, contentType) { return showInViewer(name, contentType, () => gatewayFetchRestrictedBlob(owner)); }
 function closeViewer() {
   const modal = document.getElementById("viewer-modal");
   modal.classList.add("hidden");
@@ -364,176 +322,11 @@ function closeViewer() {
   document.getElementById("viewer-body").innerHTML = "";
 }
 
-// ---------- Führerschein ----------
-function fsStatusBadge(entry) {
-  const f = fsFaelligAm(entry);
-  if (!f) return `<span class="fs-badge due">unbekannt</span>`;
-  return f.getTime() > Date.now()
-    ? `<span class="fs-badge ok">gültig</span>`
-    : `<span class="fs-badge due">abgelaufen</span>`;
-}
-function renderFuehrerschein() {
-  const mine = appData.fuehrerschein.find((e) => e.username === myUsername());
-  const eigen = document.getElementById("fs-eigen");
-  if (mine) {
-    const faellig = fsFaelligAm(mine);
-    const gueltig = fsIstGueltig(mine);
-    const statusText = gueltig
-      ? `✅ Gültig bis ${escapeHtml(fmtDate(faellig))}`
-      : `⚠️ Abgelaufen — seit ${escapeHtml(fmtDate(faellig))} erneut fällig. Bitte neu einreichen.`;
-    eigen.innerHTML = `<div class="fs-status ${gueltig ? "ok" : "due"}">
-      <span>${statusText}</span>
-      <button type="button" class="foto-view" data-view-fs="${escapeHtml(mine.username)}" data-name="${escapeHtml(mine.dateiName)}" data-ct="${escapeHtml(mine.contentType)}">${escapeHtml(mine.dateiName)}</button>
-      <span class="muted">eingereicht ${escapeHtml(fmtTimestamp(mine.hochgeladenAm))}</span>
-      <button type="button" class="btn small danger" data-del-fs="${escapeHtml(mine.id)}" style="margin-left:auto;">Löschen</button></div>`;
-  } else {
-    eigen.innerHTML = `<div class="fs-status due"><span>⚠️ Noch keine Führerschein-Kopie eingereicht.</span></div>`;
-  }
-  document.getElementById("btn-fs-upload").textContent = mine ? "Datei ersetzen…" : "Datei / Galerie wählen…";
-  document.getElementById("btn-fs-camera").textContent = mine ? "📷 Neu aufnehmen" : "📷 Foto aufnehmen";
-
-  // Register — NUR für Admin + Gruppe „Führerschein Einsicht".
-  const card = document.getElementById("fs-register-card");
-  const mayView = canViewLicenses();
-  card.classList.toggle("hidden", !mayView);
-  if (!mayView) return;
-  const list = appData.fuehrerschein.slice().sort((a, b) => {
-    const fa = fsFaelligAm(a), fb = fsFaelligAm(b);
-    return (fa ? fa.getTime() : Infinity) - (fb ? fb.getTime() : Infinity) || (a.fahrerName || "").localeCompare(b.fahrerName || "");
-  });
-  document.querySelector("#fs-register tbody").innerHTML = list.map((e) => `<tr>
-    <td class="strong">${escapeHtml(e.fahrerName || e.username)}</td>
-    <td>${escapeHtml(fmtTimestamp(e.hochgeladenAm))}</td>
-    <td>${escapeHtml(fmtDate(fsFaelligAm(e)))}</td>
-    <td>${fsStatusBadge(e)}</td>
-    <td class="num">
-      <button type="button" class="foto-view" data-view-fs="${escapeHtml(e.username)}" data-name="${escapeHtml(e.dateiName)}" data-ct="${escapeHtml(e.contentType)}">ansehen</button>
-      <button type="button" class="icon-btn" data-del-fs="${escapeHtml(e.id)}" title="Löschen">×</button>
-    </td></tr>`).join("");
-  document.getElementById("fs-register-empty").classList.toggle("hidden", list.length > 0);
-  document.getElementById("btn-fs-export").disabled = list.length === 0;
-}
-// A4 in PDF-Punkten (72dpi), für Deckblätter und eingebettete Fotos.
-const PDF_PAGE = [595.28, 841.89];
-function pdfAddImagePage(doc, image) {
-  const [pw, ph] = PDF_PAGE;
-  const maxW = pw - 100, maxH = ph - 140;
-  const scale = Math.min(maxW / image.width, maxH / image.height, 1);
-  const w = image.width * scale, h = image.height * scale;
-  doc.addPage(PDF_PAGE).drawImage(image, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h });
-}
-async function exportFuehrerscheinePdf() {
-  const list = appData.fuehrerschein.slice().sort((a, b) => (a.fahrerName || a.username).localeCompare(b.fahrerName || b.username));
-  if (!list.length) return;
-  const btn = document.getElementById("btn-fs-export");
-  const prevLabel = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "Erstelle PDF…";
-  try {
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
-    const out = await PDFDocument.create();
-    const font = await out.embedFont(StandardFonts.HelveticaBold);
-    const drawLabelPage = (lines) => {
-      const page = out.addPage(PDF_PAGE);
-      let y = 780;
-      lines.forEach((line, i) => {
-        page.drawText(line, { x: 50, y, size: i === 0 ? 18 : 12, font, color: rgb(0.1, 0.1, 0.1) });
-        y -= i === 0 ? 30 : 20;
-      });
-    };
-    drawLabelPage(["Führerschein-Register", `Export vom ${fmtDate(new Date())} · ${list.length} Fahrer`]);
-
-    const fehler = [];
-    for (const entry of list) {
-      const wer = entry.fahrerName || entry.username;
-      let bytes;
-      try {
-        const blob = await gatewayFetchRestrictedBlob(entry.username);
-        bytes = new Uint8Array(await blob.arrayBuffer());
-      } catch (e) {
-        fehler.push(`${wer} (Datei nicht abrufbar: ${e.message})`);
-        continue;
-      }
-      drawLabelPage([wer, `Eingereicht: ${fmtTimestamp(entry.hochgeladenAm)}`, `Gültig bis: ${fmtDate(fsFaelligAm(entry))} (${fsIstGueltig(entry) ? "gültig" : "abgelaufen"})`]);
-      const ct = (entry.contentType || "").toLowerCase();
-      try {
-        if (ct === "application/pdf") {
-          const src = await PDFDocument.load(bytes);
-          (await out.copyPages(src, src.getPageIndices())).forEach((p) => out.addPage(p));
-        } else if (ct === "image/png") {
-          pdfAddImagePage(out, await out.embedPng(bytes));
-        } else if (ct === "image/jpeg" || ct === "image/jpg") {
-          pdfAddImagePage(out, await out.embedJpg(bytes));
-        } else {
-          fehler.push(`${wer} (Dateiformat „${entry.contentType || "unbekannt"}“ wird nicht unterstützt)`);
-        }
-      } catch (e) {
-        fehler.push(`${wer} (Datei beschädigt oder nicht lesbar)`);
-      }
-    }
-
-    const pdfBytes = await out.save();
-    const url = URL.createObjectURL(new Blob([pdfBytes], { type: "application/pdf" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Fuehrerscheine-Export_${new Date().toISOString().slice(0, 10)}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    // Verzögert freigeben: sofortiges revoke direkt nach click() bricht den Download
-    // auf manchen (v.a. mobilen) Browsern ab — gleiche Konvention wie download() in
-    // den Schwester-Apps.
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-    if (fehler.length) alert("PDF erstellt, aber nicht alle Kopien konnten eingefügt werden:\n\n" + fehler.join("\n"));
-  } catch (e) {
-    alert("PDF-Export fehlgeschlagen: " + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = prevLabel;
-  }
-}
-async function uploadFuehrerschein(file) {
-  if (!file) return;
-  if (file.size > MAX_FILE_BYTES) { alert(`Datei ist zu groß (max. ${Math.round(MAX_FILE_BYTES / 1024 / 1024)} MB).`); return; }
-  const camBtn = document.getElementById("btn-fs-camera");
-  const fileBtn = document.getElementById("btn-fs-upload");
-  camBtn.disabled = true; fileBtn.disabled = true; fileBtn.textContent = "Lädt hoch…";
-  try {
-    // Abgeschottet: der Server legt die Datei unter dem eigenen Nutzernamen ab (ein
-    // Re-Upload überschreibt die bisherige eigene Kopie — kein Aufräumen alter Ids nötig).
-    await gatewayUploadRestrictedFile(file, file.type || "application/octet-stream");
-    let entry = appData.fuehrerschein.find((e) => e.username === myUsername());
-    if (!entry) { entry = { id: uuid(), username: myUsername() }; appData.fuehrerschein.push(entry); }
-    entry.fahrerName = myName();
-    entry.dateiName = file.name;
-    entry.contentType = file.type || "";
-    entry.hochgeladenAm = new Date().toISOString();
-    await saveNow();
-  } catch (e) {
-    alert("Upload fehlgeschlagen: " + e.message);
-  } finally {
-    camBtn.disabled = false; fileBtn.disabled = false;
-    renderFuehrerschein(); // setzt die Button-Labels/Status anhand des aktuellen Stands neu
-  }
-}
-async function deleteFuehrerschein(entryId) {
-  const entry = appData.fuehrerschein.find((e) => e.id === entryId);
-  if (!entry) return;
-  if (!(canViewLicenses() || entry.username === myUsername())) { alert("Nur der eigene Eintrag oder berechtigte Nutzer."); return; }
-  if (!confirm("Diese Führerschein-Kopie wirklich löschen?")) return;
-  gatewayDeleteRestrictedFile(entry.username).catch(() => {});
-  appData.fuehrerschein = appData.fuehrerschein.filter((e) => e.id !== entryId);
-  renderFuehrerschein();
-  await saveNow();
-}
-
 // ---------- Einstellungen / Meta / Nutzer ----------
 function renderMeta() {
   const m = appData.meta || {};
-  const gueltige = appData.fuehrerschein.filter(fsIstGueltig).length;
   const rows = [
     ["Fahrten erfasst", String(appData.fahrten.length)],
-    ["Führerschein-Kopien", `${gueltige} gültig / ${appData.fuehrerschein.length} gesamt`],
     ["Letzter Stand", m.stand ? new Date(m.stand).toLocaleString("de-DE") : "—"]
   ];
   document.getElementById("meta-view").innerHTML = rows.map(([k, v]) =>
@@ -571,7 +364,6 @@ function applyEditVisibility() {
 function renderAll() {
   fillFahrerFilter();
   renderFahrten();
-  renderFuehrerschein();
   renderMeta();
   renderVersionInfo();
   applyEditVisibility();
@@ -583,7 +375,6 @@ function switchTab(tab) {
   document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".tab-section").forEach((s) => s.classList.toggle("active", s.id === "tab-" + tab));
   if (tab === "fahrten") { fillFahrerFilter(); renderFahrten(); }
-  if (tab === "fuehrerschein") renderFuehrerschein();
   if (tab === "einstellungen") { renderMeta(); renderVersionInfo(); }
 }
 
@@ -696,19 +487,6 @@ function setupListeners() {
     if (rm) { removeFotoFromEditing(rm.dataset.removeFoto); return; }
     const vw = e.target.closest("[data-view-foto]");
     if (vw) { const f = editingFotos.find((x) => x.id === vw.dataset.viewFoto); if (f) viewFile(f.id, f.name, f.contentType); }
-  });
-
-  // Führerschein
-  document.getElementById("btn-fs-upload").addEventListener("click", () => document.getElementById("fs-file-input").click());
-  document.getElementById("fs-file-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
-  document.getElementById("btn-fs-camera").addEventListener("click", () => document.getElementById("fs-camera-input").click());
-  document.getElementById("fs-camera-input").addEventListener("change", (e) => { uploadFuehrerschein(e.target.files[0]); e.target.value = ""; });
-  document.getElementById("btn-fs-export").addEventListener("click", exportFuehrerscheinePdf);
-  document.getElementById("tab-fuehrerschein").addEventListener("click", (e) => {
-    const vw = e.target.closest("[data-view-fs]");
-    if (vw) { viewLicenseFile(vw.dataset.viewFs, vw.dataset.name, vw.dataset.ct); return; }
-    const del = e.target.closest("[data-del-fs]");
-    if (del) deleteFuehrerschein(del.dataset.delFs);
   });
 
   // Viewer
