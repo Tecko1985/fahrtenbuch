@@ -1,4 +1,4 @@
-const APP_VERSION = "1.1";
+const APP_VERSION = "1.0";
 
 // Größenlimit pro hochgeladener Datei (Schadensfoto) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
@@ -38,37 +38,16 @@ const HINWEIS_ABSCHLUSS =
 
 const APP_CHANGELOG = [
   {
-    version: "1.1",
-    groups: [
-      {
-        title: "Führerschein-Register entfernt",
-        items: [
-          "Das Führerschein-Register (Upload, Ansehen, Sammel-PDF-Export) ist umgezogen zu Trainerdaten und hier entfernt — bereits eingereichte Kopien wurden einmalig übernommen.",
-          "Fahrtenbuch selbst (Fahrtenprotokoll, Checklisten, Mängel-Fotos, Unterschrift) ist unverändert."
-        ]
-      }
-    ]
-  },
-  {
     version: "1.0",
     groups: [
       {
         title: "Fahrtenbuch / Fahrer-Checkliste",
         items: [
           "Löst die Papier-„Fahrer-Checkliste für SCH“ ab: jeder eingeloggte Fahrer erfasst seine Fahrt mit Fahrzeug- und Fahrtdaten (Kennzeichen, Insassen, Reiseziel, Kilometerstand, Datum/Uhrzeit, Übernahme/Übergabe).",
-          "Sicherheits-Checklisten vor und nach der Fahrt (Führerschein, Mindestalter, kein Alkohol, Verkehrssicherheit, Sichtkontrolle, vollgetankt, Reinigung) direkt zum Abhaken.",
+          "Sicherheits-Checklisten vor und nach der Fahrt (gültiger Führerschein, Mindestalter, kein Alkohol, Verkehrssicherheit, Sichtkontrolle, vollgetankt, Reinigung) direkt zum Abhaken. Die Führerschein-Kopie selbst wird in Trainerdaten hinterlegt.",
           "Mängel/Beschädigungen als Freitext plus Foto-Upload — die Fotos landen sicher im Vereins-Nextcloud, kein Verschicken per Mail mehr nötig.",
           "Fahrt wird handschriftlich (Finger/Maus) unterschrieben und abgeschlossen.",
           "Zwischenspeichern möglich: eine Fahrt kann als „offen“ begonnen und später abgeschlossen werden."
-        ]
-      },
-      {
-        title: "Führerschein",
-        items: [
-          "Jeder Fahrer hinterlegt seine Führerschein-Kopie direkt in der App — am Handy per Kamera aufgenommen oder als vorhandene Datei/PDF aus Galerie/Dateien.",
-          "Nach der ersten Einreichung ist die Kopie alle 6 Monate zu erneuern — die App zeigt „gültig bis …“ bzw. „abgelaufen, bitte neu einreichen“.",
-          "Die eingereichten Kopien liegen serverseitig abgeschottet: eine Kopie wird nur an den Eigentümer selbst, an Admins und an die Gruppe „Führerschein Einsicht“ herausgegeben — unabhängig von der allgemeinen Tool-Sichtbarkeit. Ein erneuter Upload ersetzt die bisherige Kopie (ein Dokument je Fahrer).",
-          "Register (Fahrer · eingereicht · gültig bis · Status) für Admin und die Gruppe „Führerschein Einsicht“, inklusive Sammel-PDF-Export aller eingereichten Kopien (Fotos und PDFs) mit Deckblatt je Fahrer."
         ]
       },
       {
