@@ -7,7 +7,7 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 // Checklisten-Gruppen des Fahrer-Protokolls (1:1 aus der Papiervorlage). Jeder Eintrag
 // { key, label } wird als Checkbox gerendert; key ist zugleich das Feld im Fahrt-Datensatz.
 const ANFORDERUNGEN = [
-  { key: "chkFuehrerschein", label: "Besitz eines gültigen Führerscheins (Kopie der Fahrerlaubnis alle 6 Monate in die SCH-Cloud hochladen — Tab „Führerschein“)" },
+  { key: "chkFuehrerschein", label: "Besitz eines gültigen Führerscheins (Kopie der Fahrerlaubnis alle 6 Monate in Trainerdaten hochladen)" },
   { key: "chkMindestalter", label: "Mindestalter des Fahrers: 23 Jahre" },
   { key: "chkKeinAlkohol", label: "Kein Alkohol- oder Drogenkonsum vor und während der Fahrzeugnutzung" }
 ];
