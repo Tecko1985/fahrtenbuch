@@ -17,7 +17,8 @@ Live: https://tecko1985.github.io/fahrtenbuch/
 - **Führerschein:** jeder Fahrer lädt seine Führerschein-Kopie hoch (am Handy direkt per
   Kamera); nach der ersten Einreichung ist sie **alle 6 Monate** zu erneuern — die App
   zeigt „gültig bis …“ bzw. „abgelaufen“. Ein Register (Fahrer · eingereicht · gültig bis ·
-  Status) sehen **nur** Admin und die Gruppe `fuehrerschein-einsicht`.
+  Status) sehen **nur** Admin und die Gruppe `fuehrerschein-einsicht`, inklusive
+  Sammel-PDF-Export aller eingereichten Kopien (Fotos und PDFs) mit Deckblatt je Fahrer.
 - **Rechte:** jeder eingeloggte Nutzer legt/sieht seine **eigenen** Fahrten;
   Admin und die Gruppe `fahrtenbuch-bearbeiter` sehen und verwalten **alle Fahrten**.
   Die Einsicht in fremde Führerschein-Kopien ist davon getrennt und liegt allein bei
@@ -65,4 +66,5 @@ Dateien: `index.html`, `app.js`, `config.js`, `db.js`, `signature-pad.js`, `styl
 - Konfliktschutz = Erkennen (409) + Neuladen, kein Merge (Standard aller Gateway-Apps).
 - Eigentümer-Filterung ist UI-seitig — wer Tool-Zugriff hat, kann technisch die ganze
   Datei speichern (gilt für alle Gateway-Apps).
-- Kein PDF-/Export in v1.0 (nur Online-Ansicht).
+- Der Führerschein-PDF-Export unterstützt nur PDF/JPG/PNG; andere Formate (z. B. HEIC)
+  werden übersprungen und gemeldet, nicht konvertiert.

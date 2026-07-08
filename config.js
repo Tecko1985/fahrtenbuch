@@ -1,4 +1,4 @@
-const APP_VERSION = "1.7";
+const APP_VERSION = "1.0";
 
 // Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
 // 6 Monate erneut einzureichen.
@@ -47,85 +47,6 @@ const HINWEIS_ABSCHLUSS =
 
 const APP_CHANGELOG = [
   {
-    version: "1.7",
-    groups: [
-      {
-        title: "Versionsbadge",
-        items: [
-          "Der Versionshinweis oben neben dem Titel ist jetzt anklickbar und führt direkt zu dieser Änderungsübersicht im Einstellungen-Tab."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.6",
-    groups: [
-      {
-        title: "Fehlerbehebung",
-        items: [
-          "Führerschein-Sammel-PDF: Der Download konnte auf manchen (v. a. mobilen) Browsern abbrechen, weil der Download-Link zu früh wieder freigegeben wurde."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.5",
-    groups: [
-      {
-        title: "Führerschein",
-        items: [
-          "Neuer Knopf „Alle als PDF exportieren“ im Führerschein-Register: bündelt alle eingereichten Führerschein-Kopien (Fotos und PDFs) zu einem einzigen PDF-Dokument mit Deckblatt je Fahrer (Name, eingereicht am, gültig bis) zum Download."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.4",
-    groups: [
-      {
-        title: "Sonstiges",
-        items: [
-          "Doppelte Versionsanzeige im Einstellungen-Button entfernt (Version steht weiterhin im Titel und in der Versionshistorie)."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.3",
-    groups: [
-      {
-        title: "Führerschein – echter Zugriffsschutz",
-        items: [
-          "Die eingereichten Führerschein-Kopien liegen jetzt in einem serverseitig abgeschotteten Bereich: das Gateway gibt eine Kopie nur noch an den Eigentümer selbst, an Admins und an die Gruppe „Führerschein Einsicht“ heraus — vorher wirkte die Beschränkung nur in der Oberfläche.",
-          "Die Datei wird unter dem Nutzernamen abgelegt (ein Dokument je Fahrer); ein erneuter Upload ersetzt die bisherige Kopie."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.2",
-    groups: [
-      {
-        title: "Führerschein",
-        items: [
-          "Die Führerschein-Kopie muss nach der ersten Einreichung alle 6 Monate erneuert werden — die App zeigt „gültig bis …“ bzw. „abgelaufen, bitte neu einreichen“.",
-          "Die eingereichten Kopien sind nur noch für Admin und die Gruppe „Führerschein Einsicht“ einsehbar; jeder Fahrer sieht weiterhin seine eigene."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.1",
-    groups: [
-      {
-        title: "Führerschein",
-        items: [
-          "Die Führerschein-Kopie lässt sich am Handy jetzt direkt mit der Kamera aufnehmen („📷 Foto aufnehmen“) — alternativ weiterhin eine vorhandene Datei bzw. PDF aus Galerie/Dateien wählen."
-        ]
-      }
-    ]
-  },
-  {
     version: "1.0",
     groups: [
       {
@@ -141,8 +62,10 @@ const APP_CHANGELOG = [
       {
         title: "Führerschein",
         items: [
-          "Jeder Fahrer hinterlegt seine Führerschein-Kopie einmal pro Saison direkt in der App.",
-          "Admin und berechtigte Gruppe sehen ein Register, wer für die aktuelle Saison eine Kopie hinterlegt hat."
+          "Jeder Fahrer hinterlegt seine Führerschein-Kopie direkt in der App — am Handy per Kamera aufgenommen oder als vorhandene Datei/PDF aus Galerie/Dateien.",
+          "Nach der ersten Einreichung ist die Kopie alle 6 Monate zu erneuern — die App zeigt „gültig bis …“ bzw. „abgelaufen, bitte neu einreichen“.",
+          "Die eingereichten Kopien liegen serverseitig abgeschottet: eine Kopie wird nur an den Eigentümer selbst, an Admins und an die Gruppe „Führerschein Einsicht“ herausgegeben — unabhängig von der allgemeinen Tool-Sichtbarkeit. Ein erneuter Upload ersetzt die bisherige Kopie (ein Dokument je Fahrer).",
+          "Register (Fahrer · eingereicht · gültig bis · Status) für Admin und die Gruppe „Führerschein Einsicht“, inklusive Sammel-PDF-Export aller eingereichten Kopien (Fotos und PDFs) mit Deckblatt je Fahrer."
         ]
       },
       {
