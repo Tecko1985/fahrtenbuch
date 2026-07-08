@@ -1,4 +1,4 @@
-const APP_VERSION = "1.6";
+const APP_VERSION = "1.7";
 
 // Gültigkeitsdauer einer Führerschein-Kopie: nach der ersten Einreichung ist sie alle
 // 6 Monate erneut einzureichen.
@@ -46,6 +46,17 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.7",
+    groups: [
+      {
+        title: "Versionsbadge",
+        items: [
+          "Der Versionshinweis oben neben dem Titel ist jetzt anklickbar und führt direkt zu dieser Änderungsübersicht im Einstellungen-Tab."
+        ]
+      }
+    ]
+  },
   {
     version: "1.6",
     groups: [
