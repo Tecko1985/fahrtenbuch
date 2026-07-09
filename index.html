@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🚐 Fahrtenbuch</title>
 <meta name="theme-color" content="#1a56a0" />
-<link rel="stylesheet" href="style.css?v=1.0" />
+<link rel="stylesheet" href="style.css?v=1.1" />
 </head>
 <body>
 
@@ -80,6 +80,10 @@
         <button class="modal-close" id="fahrt-modal-close" aria-label="Schließen">×</button>
       </div>
       <div class="modal-body">
+        <div class="extern-info hidden" id="ff-extern-info">
+          <span class="badge-extern">🔗 Extern eingetragen</span>
+          <button type="button" class="btn small secondary hidden" id="btn-view-fuehrerschein">Führerschein ansehen</button>
+        </div>
         <form id="fahrt-form" autocomplete="off">
 
           <fieldset class="form-fieldset">
@@ -186,9 +190,9 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.0"></script>
+  <script src="config.js?v=1.1"></script>
   <script src="db.js?v=1.0"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.0"></script>
+  <script src="app.js?v=1.1"></script>
 </body>
 </html>

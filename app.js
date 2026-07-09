@@ -76,7 +76,9 @@ function normalizeFahrt(f) {
     maengelText: typeof d.maengelText === "string" ? d.maengelText : "",
     maengelFotos: Array.isArray(d.maengelFotos) ? d.maengelFotos.map(normalizeFoto).filter(Boolean) : [],
     unterschriftDataUrl: (typeof d.unterschriftDataUrl === "string" && /^data:image\//.test(d.unterschriftDataUrl)) ? d.unterschriftDataUrl : "",
-    status: d.status === "abgeschlossen" ? "abgeschlossen" : "offen"
+    status: d.status === "abgeschlossen" ? "abgeschlossen" : "offen",
+    quelle: d.quelle === "extern" ? "extern" : "intern",
+    fuehrerscheinKey: (typeof d.fuehrerscheinKey === "string" && d.fuehrerscheinKey) ? d.fuehrerscheinKey : null
   };
   ALLE_CHECK_KEYS.forEach((k) => { out[k] = !!d[k]; });
   return out;
@@ -99,6 +101,8 @@ function myName() {
   return n || currentUser.username || "";
 }
 function canManageFahrt(fahrt) { return canEdit() || (fahrt.erstelltVon && fahrt.erstelltVon === myUsername()); }
+// Analog mayViewRestricted() im Worker: Admin oder Mitglied der Gruppe fuehrerschein-einsicht.
+function mayViewFuehrerschein() { return !!currentUser && (currentUser.isAdmin || (currentUser.groupIds || []).includes("fuehrerschein-einsicht")); }
 
 // ---------- Fahrten-Liste ----------
 function visibleFahrten() {
@@ -126,12 +130,13 @@ function renderFahrten() {
     const farbe = STATUS_FARBE[f.status] || STATUS_FARBE.offen;
     const sub = [f.abteilung, canEdit() ? ("Fahrer: " + (f.fahrerName || "—")) : null].filter(Boolean).map(escapeHtml).join(" · ");
     const fotos = f.maengelFotos.length ? ` · 📷 ${f.maengelFotos.length}` : "";
+    const externBadge = f.quelle === "extern" ? ` <span class="badge-extern" title="Von einem externen Nutzer eingetragen">🔗 Extern</span>` : "";
     return `<div class="fahrt-row" data-id="${escapeHtml(f.id)}">
       <div class="fr-main">
         <div class="fr-title">${escapeHtml(fmtDatum(f.datumStart))} — ${escapeHtml(f.reiseziel || "ohne Ziel")}</div>
         <div class="fr-sub muted">${sub}${fotos}</div>
       </div>
-      <span class="status-badge" style="background:${farbe}">${escapeHtml(STATUS_LABEL[f.status] || f.status)}</span>
+      <span class="status-badge" style="background:${farbe}">${escapeHtml(STATUS_LABEL[f.status] || f.status)}</span>${externBadge}
     </div>`;
   }).join("");
   document.getElementById("fahrten-count").textContent = `${rows.length} von ${all.length}`;
@@ -186,6 +191,12 @@ function openFahrt(id) {
   renderFotoList();
   document.getElementById("ff-hinweis").textContent = HINWEIS_ABSCHLUSS;
   document.getElementById("btn-delete-fahrt").classList.toggle("hidden", !(fahrt && canManageFahrt(fahrt)));
+  const isExtern = !!(fahrt && fahrt.quelle === "extern");
+  document.getElementById("ff-extern-info").classList.toggle("hidden", !isExtern);
+  const fsBtn = document.getElementById("btn-view-fuehrerschein");
+  const hasFuehrerschein = !!(fahrt && fahrt.fuehrerscheinKey && mayViewFuehrerschein());
+  fsBtn.classList.toggle("hidden", !hasFuehrerschein);
+  fsBtn.dataset.owner = fahrt && fahrt.fuehrerscheinKey ? fahrt.fuehrerscheinKey : "";
 
   document.getElementById("fahrt-modal").classList.remove("hidden");
   // Signatur-Canvas ist jetzt sichtbar -> Größe/Backing neu setzen, dann Inhalt laden.
@@ -315,6 +326,27 @@ async function showInViewer(name, contentType, getBlob) {
 }
 // Mängel-Foto (offener dateien/-Ordner, nur Tool-Zugriff nötig).
 function viewFile(id, name, contentType) { return showInViewer(name, contentType, () => gatewayFetchFileBlob(id)); }
+// Führerschein-Kopie eines extern eingetragenen Eintrags (abgeschotteter Bereich,
+// dav-restricted-get mit Session-Token — funktioniert unverändert für Admin/
+// fuehrerschein-einsicht, owner = der beim Upload vom Server vergebene Schlüssel).
+async function gatewayFetchRestrictedBlob(owner) {
+  const token = getSessionToken();
+  if (!token) throw new NotLoggedInError();
+  const resp = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+    body: JSON.stringify({ action: "dav-restricted-get", app: GATEWAY_APP_ID, owner })
+  });
+  if (resp.status === 401) throw new NotLoggedInError("Sitzung abgelaufen");
+  if (resp.status === 403) throw new Error("Kein Zugriff auf diese Datei.");
+  if (resp.status === 404) throw new Error("Datei nicht gefunden.");
+  if (!resp.ok) throw new Error("Datei nicht abrufbar (HTTP " + resp.status + ")");
+  return resp.blob();
+}
+function viewFuehrerscheinExtern(owner) {
+  if (!owner) return;
+  showInViewer("Führerschein (extern hochgeladen)", "", () => gatewayFetchRestrictedBlob(owner));
+}
 function closeViewer() {
   const modal = document.getElementById("viewer-modal");
   modal.classList.add("hidden");
@@ -487,6 +519,10 @@ function setupListeners() {
     if (rm) { removeFotoFromEditing(rm.dataset.removeFoto); return; }
     const vw = e.target.closest("[data-view-foto]");
     if (vw) { const f = editingFotos.find((x) => x.id === vw.dataset.viewFoto); if (f) viewFile(f.id, f.name, f.contentType); }
+  });
+
+  document.getElementById("btn-view-fuehrerschein").addEventListener("click", (e) => {
+    viewFuehrerscheinExtern(e.currentTarget.dataset.owner);
   });
 
   // Viewer

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚐 Fahrtenbuch — Fahrt eintragen</title>
+<meta name="theme-color" content="#1a56a0" />
+<link rel="stylesheet" href="style.css?v=1.1" />
+</head>
+<body class="extern-page">
+
+  <header>
+    <h1>🚐 Fahrtenbuch <span class="version-badge">extern</span></h1>
+    <div class="header-right">
+      <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ---------- Schritt 1: Zugriffscode ---------- -->
+    <div class="connect-screen" id="fx-gate">
+      <div class="card">
+        <h2>Zugriffscode</h2>
+        <p>Diese Seite ist für Eltern gedacht, die ein Vereinsfahrzeug fahren, ohne
+          selbst ein Konto im Vereinssystem zu haben. Bitte den vom Verein erhaltenen
+          Zugriffscode eingeben.</p>
+        <div class="form-field"><label>Zugriffscode</label><input type="text" id="fx-code" autocomplete="off" /></div>
+        <div class="btn-row"><button class="btn" id="btn-code-confirm">Weiter</button></div>
+        <p class="muted" id="fx-code-error" style="margin-top:14px;"></p>
+      </div>
+    </div>
+
+    <!-- ---------- Schritt 2: Formular ---------- -->
+    <form id="fx-form" class="hidden" autocomplete="off">
+
+      <fieldset class="form-fieldset">
+        <legend>Fahrzeug &amp; Fahrt</legend>
+        <div class="form-grid">
+          <div class="form-field"><label>Kennzeichen</label><input type="text" id="fx-kennzeichen" placeholder="z. B. EIC-SC 191" /></div>
+          <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="fx-fahrer" /></div>
+          <div class="form-field"><label>Abteilung / Mannschaft</label><input type="text" id="fx-abteilung" placeholder="z. B. C-Jugend" /></div>
+          <div class="form-field"><label>Anzahl der Insassen</label><input type="number" id="fx-insassen" min="0" inputmode="numeric" /></div>
+          <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="fx-reiseziel" placeholder="z. B. Mühlhausen" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Kilometerstand</legend>
+        <div class="form-grid">
+          <div class="form-field"><label>Start</label><input type="number" id="fx-kmstart" min="0" inputmode="numeric" /></div>
+          <div class="form-field"><label>Ende</label><input type="number" id="fx-kmende" min="0" inputmode="numeric" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Datum &amp; Uhrzeit</legend>
+        <div class="form-grid">
+          <div class="form-field"><label>Datum Start</label><input type="date" id="fx-datumstart" /></div>
+          <div class="form-field"><label>Uhrzeit Start</label><input type="time" id="fx-uhrzeitstart" /></div>
+          <div class="form-field"><label>Datum Ende</label><input type="date" id="fx-datumende" /></div>
+          <div class="form-field"><label>Uhrzeit Ende</label><input type="time" id="fx-uhrzeitende" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Übernahme / Übergabe</legend>
+        <div class="form-grid">
+          <div class="form-field"><label>Übernahme von</label><input type="text" id="fx-uebernahme" /></div>
+          <div class="form-field"><label>Abholort</label><input type="text" id="fx-abholort" /></div>
+          <div class="form-field"><label>Übergabe an</label><input type="text" id="fx-uebergabe" /></div>
+          <div class="form-field"><label>Abstellort</label><input type="text" id="fx-abstellort" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Anforderungen an den Fahrer</legend>
+        <div class="check-col" id="fx-anforderungen"></div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Führerschein-Kopie</legend>
+        <p class="muted" style="margin-bottom:8px;">Foto oder Scan des Führerscheins — wird
+          abgeschottet gespeichert, sichtbar nur für den Vereins-Admin und die
+          Führerschein-Einsicht-Gruppe.</p>
+        <div class="foto-list" id="fx-fuehrerschein-list"></div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:8px;">
+          <button type="button" class="btn small secondary" id="btn-fuehrerschein-upload">Führerschein hochladen…</button>
+          <input type="file" id="fx-fuehrerschein-input" accept="image/*,.pdf" class="hidden" />
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Fahrzeugkontrolle vor der Fahrt</legend>
+        <div class="check-col" id="fx-kontrolle-vor"></div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Mängel / Beschädigungen</legend>
+        <div class="form-field wide">
+          <textarea id="fx-maengel" rows="3" placeholder="Beschädigungen beschreiben (falls vorhanden)…"></textarea>
+        </div>
+        <label class="mini-label">Fotos</label>
+        <div class="foto-list" id="fx-foto-list"></div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:8px;">
+          <button type="button" class="btn small secondary" id="btn-foto-upload">Foto hinzufügen…</button>
+          <input type="file" id="fx-foto-input" accept="image/*" multiple class="hidden" />
+        </div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Nach der Fahrt</legend>
+        <div class="check-col" id="fx-kontrolle-nach"></div>
+      </fieldset>
+
+      <fieldset class="form-fieldset">
+        <legend>Unterschrift des Fahrers</legend>
+        <div class="signature-wrap">
+          <canvas id="fx-signature" class="signature-canvas"></canvas>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:6px;">
+          <button type="button" class="btn small secondary" id="btn-signature-clear">Unterschrift löschen</button>
+        </div>
+      </fieldset>
+
+      <p class="muted hinweis-box" id="fx-hinweis"></p>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button type="submit" class="btn success" id="btn-fx-submit">Fahrt eintragen</button>
+      </div>
+    </form>
+
+    <!-- ---------- Schritt 3: Bestätigung ---------- -->
+    <div class="card hidden" id="fx-success">
+      <h2>✅ Fahrt eingetragen</h2>
+      <p class="muted">Vielen Dank! Die Fahrt wurde im Fahrtenbuch des Vereins gespeichert.</p>
+      <div class="form-grid" id="fx-success-summary" style="margin-top:14px;"></div>
+      <div class="btn-row" style="margin-top:14px;justify-content:flex-start;">
+        <button class="btn" id="btn-fx-reset">Weitere Fahrt eintragen</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ---------- Datei-Viewer (Vorschau eigener Uploads) ---------- -->
+  <div class="modal-overlay hidden" id="viewer-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="viewer-title">Datei</h2>
+        <button class="modal-close" id="viewer-close" aria-label="Schließen">×</button>
+      </div>
+      <div class="modal-body" id="viewer-body" style="text-align:center;">
+        <p class="muted" id="viewer-loading">Wird geladen…</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js?v=1.1"></script>
+  <script src="db-extern.js?v=1.1"></script>
+  <script src="signature-pad.js?v=1.0"></script>
+  <script src="extern.js?v=1.1"></script>
+</body>
+</html>

@@ -3,9 +3,11 @@
 Digitale Ablösung der Papier-„Fahrer-Checkliste für SCH“ — Gateway-App der
 [ToolsUebersicht](https://tecko1985.github.io/ToolsUebersicht/)-Familie. Jeder
 eingeloggte Nutzer (Fahrer) erfasst pro Fahrt mit einem Vereinsfahrzeug ein
-Fahrtenprotokoll mit Sicherheits-Checklisten und Unterschrift.
+Fahrtenprotokoll mit Sicherheits-Checklisten und Unterschrift. Seit 1.1 können
+zusätzlich Eltern ohne eigenes Vereinskonto über eine separate, zugriffscode-
+geschützte Seite (`extern.html`) Fahrten eintragen — siehe Abschnitt „Extern“.
 
-Live: https://tecko1985.github.io/fahrtenbuch/
+Live: https://tecko1985.github.io/fahrtenbuch/ · Extern: https://tecko1985.github.io/fahrtenbuch/extern.html
 
 ## Funktionen
 
@@ -21,6 +23,27 @@ Live: https://tecko1985.github.io/fahrtenbuch/
 - **Rechte:** jeder eingeloggte Nutzer legt/sieht seine **eigenen** Fahrten;
   Admin und die Gruppe `fahrtenbuch-bearbeiter` sehen und verwalten **alle Fahrten**.
 
+## Extern (für Eltern ohne Konto)
+
+`extern.html` ist eine eigenständige, login-lose Seite nach dem Vorbild von
+`sc-heiligenstadt-budget/beleg-eingang.html`: Zugriffscode statt Login, gleiches
+Formular wie intern (Kopfdaten, alle 9 Sicherheits-Checkboxen, Mängelfotos,
+Unterschrift) plus einem zusätzlichen Führerschein-Upload. Eingetragene Fahrten
+erscheinen sofort in der normalen Fahrten-Liste (Feld `quelle:"extern"`, Badge
+„🔗 Extern“) — nur Admin/`fahrtenbuch-bearbeiter` können sie verwalten, da
+`erstelltVon` bei externen Einträgen leer ist. Die Führerschein-Kopie landet
+abgeschottet (Nextcloud-Unterordner `fuehrerscheine-extern/<server-vergebener-
+Schlüssel>`), sichtbar nur für Admin/Gruppe `fuehrerschein-einsicht` über den
+Button „Führerschein ansehen“ am jeweiligen Eintrag.
+
+Eigene Client-Datei `db-extern.js` (code-basierter statt session-basierter
+Gateway-Zugriff, kein Bearer-Token) und `extern.js` — bewusst getrennt von
+`db.js`/`app.js`, da `db.js` eine unveränderte 1:1-Kopiervorlage für andere
+Gateway-Apps bleiben soll. Serverseitig drei neue, login-lose Aktionen in
+`admin-worker.js` (`fahrtenbuch-extern-submit/-file-put/-fuehrerschein-put`),
+geschützt durch das Worker-Secret `PW_FAHRTENBUCH_EXTERN` (ein gemeinsamer Code
+für alle drei). Details siehe Kopf-Dokumentation in `admin-worker.js`.
+
 ## Architektur
 
 Vanilla JS, kein Build-Step. Persistenz über das zentrale ToolsUebersicht-Login-Gateway
@@ -32,7 +55,8 @@ JSON nur die Referenz `{id, name, contentType}`). Die Unterschrift wird als klei
 PNG-DataURL inline gespeichert.
 
 Dateien: `index.html`, `app.js`, `config.js`, `db.js`, `signature-pad.js`, `style.css`,
-`logo.png`. `db.js` ist aus `digitaler-stempel` übernommen (nur App-Id angepasst),
+`logo.png`, plus `extern.html`/`extern.js`/`db-extern.js` für die externe Variante
+(siehe „Extern“). `db.js` ist aus `digitaler-stempel` übernommen (nur App-Id angepasst),
 `signature-pad.js` aus `trainerkodex`/`TrainerCheckliste`.
 
 ## Deploy / Registrierung
@@ -44,9 +68,17 @@ Dateien: `index.html`, `app.js`, `config.js`, `db.js`, `signature-pad.js`, `styl
   inkl. `dateien/` wird beim ersten Speichern per MKCOL-Autofix angelegt.
 - Sichtbarkeit im Admin-Panel: **„Alle eingeloggten Nutzer“** (jeder Fahrer nutzt die
   App). Optional Gruppe `fahrtenbuch-bearbeiter` für die Voll-Sicht.
+- Seit 1.1 zusätzlich: Worker-Secret **`PW_FAHRTENBUCH_EXTERN`** (Cloudflare-Dashboard,
+  Zugriffscode für `extern.html`) und `RESTRICTED_FILE_APPS["fahrtenbuch"]` (Unterordner
+  `fuehrerscheine-extern`, Gruppe `fuehrerschein-einsicht`) in `admin-worker.js`.
 
 ## Akzeptierte Limitierungen
 
 - Konfliktschutz = Erkennen (409) + Neuladen, kein Merge (Standard aller Gateway-Apps).
 - Eigentümer-Filterung ist UI-seitig — wer Tool-Zugriff hat, kann technisch die ganze
   Datei speichern (gilt für alle Gateway-Apps).
+- Extern hochgeladene Mängelfotos/Führerschein-Kopien, deren Formular danach ohne
+  Absenden verlassen wird, werden nicht automatisch aufgeräumt (kein Cleanup-
+  Mechanismus ohne Login).
+- `fahrtenbuch-extern-submit` schreibt unconditional (kein ETag/rev-Konfliktschutz) —
+  für den erwarteten Nutzungsumfang (gelegentliche Elternfahrten) bewusst akzeptiert.

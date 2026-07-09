@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
 // Größenlimit pro hochgeladener Datei (Schadensfoto) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
@@ -37,6 +37,19 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.1",
+    groups: [
+      {
+        title: "Externes Fahrtenbuch für Eltern",
+        items: [
+          "Neue eigenständige Seite „extern.html“ für Eltern ohne eigenes Vereinskonto, die gelegentlich ein Vereinsfahrzeug fahren — geschützt durch einen einfachen Zugriffscode statt Login.",
+          "Externe Fahrten enthalten dieselben Felder wie das interne Formular (Kopfdaten, Sicherheits-Checklisten, Mängelfotos, Unterschrift) und erscheinen sofort in der normalen Fahrten-Liste, deutlich mit einem „🔗 Extern“-Badge gekennzeichnet.",
+          "Führerschein-Kopie kann direkt beim Eintragen der Fahrt mit hochgeladen werden — abgeschottet gespeichert, sichtbar nur für Admin und die Gruppe „Führerschein Einsicht“ über den Button „Führerschein ansehen“ am jeweiligen Eintrag."
+        ]
+      }
+    ]
+  },
   {
     version: "1.0",
     groups: [
