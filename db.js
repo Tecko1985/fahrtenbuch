@@ -64,10 +64,24 @@ async function fetchMe() {
   return gatewayRequest({ action: "me", app: GATEWAY_APP_ID });
 }
 
-// Liefert {belege:[{submittedAt,amount,desc,name}]} für über den Beleg-Knopf
-// eingereichte Belege zu dieser Fahrt (leer, wenn keiner gefunden wurde).
+// Liefert {belege:[{submittedAt,amount,desc,name,files:[{fileName,fileMime}]}]} für über den
+// Beleg-Knopf eingereichte Belege zu dieser Fahrt (leer, wenn keiner gefunden wurde).
 async function gatewayListBelege(fahrtId) {
   return gatewayRequest({ action: "fahrtenbuch-belege-list", app: GATEWAY_APP_ID, fahrtId });
+}
+
+// Holt eine einzelne eingereichte Beleg-Datei als Blob, für den "Beleg anzeigen"-Knopf.
+async function gatewayFetchBelegBlob(fahrtId, fileName) {
+  const token = getSessionToken();
+  if (!token) throw new NotLoggedInError();
+  const resp = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+    body: JSON.stringify({ action: "fahrtenbuch-beleg-file-get", app: GATEWAY_APP_ID, fahrtId, fileName })
+  });
+  if (resp.status === 401) throw new NotLoggedInError("Sitzung abgelaufen");
+  if (!resp.ok) throw new Error("Beleg nicht abrufbar (HTTP " + resp.status + ")");
+  return resp.blob();
 }
 
 // ---------- Datei-Anhänge (Binär-Upload über das Gateway) ----------

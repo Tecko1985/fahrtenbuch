@@ -220,16 +220,26 @@ function openFahrt(id) {
   document.getElementById("ff-kennzeichen").focus();
 }
 // Fragt asynchron ab, ob über den Beleg-Knopf schon ein Beleg zu dieser Fahrt
-// eingereicht wurde, und zeigt bei Treffer eine Bestätigung an. Rein informativ —
-// Fehler (z.B. Aktion noch nicht deployed) werden bewusst still ignoriert, das
-// Formular selbst darf davon nie blockiert werden.
+// eingereicht wurde, und zeigt bei Treffer eine Bestätigung inkl. "Anzeigen"-Knopf
+// je angehängter Datei. Rein informativ — Fehler (z.B. Aktion noch nicht deployed)
+// werden bewusst still ignoriert, das Formular selbst darf davon nie blockiert werden.
 async function loadBelegStatus(fahrtId, statusEl) {
   try {
     const { belege } = await gatewayListBelege(fahrtId);
     if (editingFahrtId !== fahrtId) return; // Modal wurde inzwischen gewechselt/geschlossen
-    if (belege && belege.length) {
-      statusEl.textContent = `📎 Beleg eingereicht am ${fmtTimestamp(belege[0].submittedAt)}`;
-    }
+    statusEl.innerHTML = "";
+    if (!belege || !belege.length) return;
+    const b = belege[0];
+    statusEl.appendChild(document.createTextNode(`📎 Beleg eingereicht am ${fmtTimestamp(b.submittedAt)} `));
+    const files = Array.isArray(b.files) ? b.files : [];
+    files.forEach((f, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn small secondary";
+      btn.textContent = files.length > 1 ? `Anzeigen (${i + 1})` : "Anzeigen";
+      btn.addEventListener("click", () => viewBeleg(fahrtId, f.fileName, f.fileMime));
+      statusEl.appendChild(btn);
+    });
   } catch (_) { /* rein informative Anzeige, darf still fehlschlagen */ }
 }
 async function closeFahrt(discardUploads) {
@@ -372,6 +382,10 @@ async function gatewayFetchRestrictedBlob(owner) {
 function viewFuehrerscheinExtern(owner) {
   if (!owner) return;
   showInViewer("Führerschein (extern hochgeladen)", "", () => gatewayFetchRestrictedBlob(owner));
+}
+function viewBeleg(fahrtId, fileName, fileMime) {
+  if (!fileName) return;
+  showInViewer(fileName, fileMime || "", () => gatewayFetchBelegBlob(fahrtId, fileName));
 }
 function closeViewer() {
   const modal = document.getElementById("viewer-modal");

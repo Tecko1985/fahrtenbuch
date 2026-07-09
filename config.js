@@ -1,4 +1,4 @@
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 // Größenlimit pro hochgeladener Datei (Schadensfoto) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
@@ -40,6 +40,17 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.3",
+    groups: [
+      {
+        title: "Beleg anzeigen",
+        items: [
+          "Die Bestätigung „Beleg eingereicht am …“ bei einer Fahrt hat jetzt einen „Anzeigen“-Knopf, der den eingereichten Beleg (Foto/PDF) direkt im gewohnten Datei-Viewer öffnet — wie beim Führerschein-Ansehen."
+        ]
+      }
+    ]
+  },
   {
     version: "1.2",
     groups: [
