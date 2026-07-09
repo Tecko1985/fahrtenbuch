@@ -1,8 +1,11 @@
-const APP_VERSION = "1.1";
+const APP_VERSION = "1.2";
 
 // Größenlimit pro hochgeladener Datei (Schadensfoto) — muss zum
 // Worker-Cap (admin-worker.js MAX_FILE_BYTES) passen.
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+// Ziel des "Beleg einreichen"-Knopfs (separates Repo/App, siehe CLAUDE.md).
+const BELEG_EINGANG_URL = "https://tecko1985.github.io/sc-heiligenstadt-budget/beleg-eingang.html";
 
 // Checklisten-Gruppen des Fahrer-Protokolls (1:1 aus der Papiervorlage). Jeder Eintrag
 // { key, label } wird als Checkbox gerendert; key ist zugleich das Feld im Fahrt-Datensatz.
@@ -37,6 +40,24 @@ const HINWEIS_ABSCHLUSS =
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.2",
+    groups: [
+      {
+        title: "Beleg einreichen",
+        items: [
+          "Neuer Knopf „🧾 Beleg einreichen“ an jeder gespeicherten Fahrt (intern) bzw. auf der Bestätigungsseite (extern) öffnet das Belegeingangs-Formular des Vereins mit vorausgefüllten Angaben (Fahrer, Datum, Zweck) — nur noch Belegfoto anhängen und absenden.",
+          "Sobald ein Beleg eingegangen ist, zeigt die Fahrt intern eine Bestätigung mit Einreichdatum an."
+        ]
+      },
+      {
+        title: "Sichtbarkeit",
+        items: [
+          "Wer keine eigenen Bearbeiten-Rechte hat, bekommt jetzt auch technisch nur noch die eigenen Fahrten übertragen (vorher nur in der Ansicht ausgeblendet) — Admin und die Gruppe „Fahrtenbuch Bearbeiter“ weiterhin mit voller Sicht."
+        ]
+      }
+    ]
+  },
   {
     version: "1.1",
     groups: [

@@ -230,6 +230,15 @@ function showSuccess(fahrt) {
     `<div class="form-field"><label>${escapeHtml(k)}</label><span>${escapeHtml(v)}</span></div>`).join("");
   document.getElementById("fx-form").classList.add("hidden");
   document.getElementById("fx-success").classList.remove("hidden");
+
+  // .onclick statt addEventListener: showSuccess() kann pro Seitenaufruf mehrfach
+  // laufen ("Weitere Fahrt eintragen"), .onclick ersetzt den Handler jedes Mal
+  // sauber statt Listener für alte fahrt-Objekte anzuhäufen.
+  document.getElementById("btn-fx-submit-beleg").onclick = () => {
+    const desc = `Fahrt ${fahrt.datumStart || ""} nach ${fahrt.reiseziel || "?"}${fahrt.kennzeichen ? " (" + fahrt.kennzeichen + ")" : ""}`;
+    const params = new URLSearchParams({ name: fahrt.fahrerName || "", date: fahrt.datumStart || "", desc, fahrtId: fahrt.id || "" });
+    window.open(BELEG_EINGANG_URL + "?" + params.toString(), "_blank");
+  };
 }
 
 function resetForm() {

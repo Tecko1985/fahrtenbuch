@@ -198,6 +198,19 @@ function openFahrt(id) {
   fsBtn.classList.toggle("hidden", !hasFuehrerschein);
   fsBtn.dataset.owner = fahrt && fahrt.fuehrerscheinKey ? fahrt.fuehrerscheinKey : "";
 
+  document.getElementById("ff-beleg-info").classList.toggle("hidden", !fahrt);
+  const belegStatus = document.getElementById("ff-beleg-status");
+  belegStatus.textContent = "";
+  if (fahrt) {
+    const belegBtn = document.getElementById("btn-submit-beleg");
+    belegBtn.dataset.fahrtId = fahrt.id;
+    belegBtn.dataset.fahrerName = fahrt.fahrerName || "";
+    belegBtn.dataset.datumStart = fahrt.datumStart || "";
+    belegBtn.dataset.reiseziel = fahrt.reiseziel || "";
+    belegBtn.dataset.kennzeichen = fahrt.kennzeichen || "";
+    loadBelegStatus(fahrt.id, belegStatus);
+  }
+
   document.getElementById("fahrt-modal").classList.remove("hidden");
   // Signatur-Canvas ist jetzt sichtbar -> Größe/Backing neu setzen, dann Inhalt laden.
   signaturePad.resize();
@@ -205,6 +218,19 @@ function openFahrt(id) {
   if (fahrt && fahrt.unterschriftDataUrl) signaturePad.loadDataURL(fahrt.unterschriftDataUrl);
   signaturePad.resize();
   document.getElementById("ff-kennzeichen").focus();
+}
+// Fragt asynchron ab, ob über den Beleg-Knopf schon ein Beleg zu dieser Fahrt
+// eingereicht wurde, und zeigt bei Treffer eine Bestätigung an. Rein informativ —
+// Fehler (z.B. Aktion noch nicht deployed) werden bewusst still ignoriert, das
+// Formular selbst darf davon nie blockiert werden.
+async function loadBelegStatus(fahrtId, statusEl) {
+  try {
+    const { belege } = await gatewayListBelege(fahrtId);
+    if (editingFahrtId !== fahrtId) return; // Modal wurde inzwischen gewechselt/geschlossen
+    if (belege && belege.length) {
+      statusEl.textContent = `📎 Beleg eingereicht am ${fmtTimestamp(belege[0].submittedAt)}`;
+    }
+  } catch (_) { /* rein informative Anzeige, darf still fehlschlagen */ }
 }
 async function closeFahrt(discardUploads) {
   document.getElementById("fahrt-modal").classList.add("hidden");
@@ -523,6 +549,13 @@ function setupListeners() {
 
   document.getElementById("btn-view-fuehrerschein").addEventListener("click", (e) => {
     viewFuehrerscheinExtern(e.currentTarget.dataset.owner);
+  });
+
+  document.getElementById("btn-submit-beleg").addEventListener("click", (e) => {
+    const ds = e.currentTarget.dataset;
+    const desc = `Fahrt ${fmtDatum(ds.datumStart)} nach ${ds.reiseziel || "?"}${ds.kennzeichen ? " (" + ds.kennzeichen + ")" : ""}`;
+    const params = new URLSearchParams({ name: ds.fahrerName || "", date: ds.datumStart || "", desc, fahrtId: ds.fahrtId || "" });
+    window.open(BELEG_EINGANG_URL + "?" + params.toString(), "_blank");
   });
 
   // Viewer

@@ -64,6 +64,12 @@ async function fetchMe() {
   return gatewayRequest({ action: "me", app: GATEWAY_APP_ID });
 }
 
+// Liefert {belege:[{submittedAt,amount,desc,name}]} für über den Beleg-Knopf
+// eingereichte Belege zu dieser Fahrt (leer, wenn keiner gefunden wurde).
+async function gatewayListBelege(fahrtId) {
+  return gatewayRequest({ action: "fahrtenbuch-belege-list", app: GATEWAY_APP_ID, fahrtId });
+}
+
 // ---------- Datei-Anhänge (Binär-Upload über das Gateway) ----------
 
 // Liest eine Datei/Blob als reines base64 (ohne data:-Präfix) für den Transport
