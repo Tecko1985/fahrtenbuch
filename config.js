@@ -34,12 +34,90 @@ const ALLE_CHECK_KEYS = [].concat(
   KONTROLLE_NACH.map((c) => c.key)
 );
 
+// Konfigurierbarer CSV-Export der Fahrten-Liste (siehe initExportPanel/exportFahrtenCsv
+// in app.js): jedes Feld einzeln per Checkbox an-/abwählbar, gruppiert wie das Fahrt-
+// Formular (gleiche Legenden). "type" steuert nur die Formatierung des Zellwerts
+// (exportFieldValue in app.js) — ohne "type" wird der Rohwert unverändert exportiert.
+// Bewusst ohne interne Felder (id, fuehrerscheinKey) und Nicht-Tabellenwerte
+// (maengelFotos-Array, unterschriftDataUrl-Bilddaten).
+const EXPORT_FIELD_GROUPS = [
+  {
+    title: "Fahrzeug & Fahrt",
+    fields: [
+      { key: "erstelltVon", label: "Erstellt von (Benutzername)" },
+      { key: "fahrerName", label: "Name des Fahrers" },
+      { key: "kennzeichen", label: "Kennzeichen" },
+      { key: "abteilung", label: "Abteilung / Mannschaft" },
+      { key: "anzahlInsassen", label: "Anzahl der Insassen" },
+      { key: "reiseziel", label: "Reiseziel" }
+    ]
+  },
+  {
+    title: "Kilometerstand",
+    fields: [
+      { key: "kmStart", label: "km Start" },
+      { key: "kmEnde", label: "km Ende" }
+    ]
+  },
+  {
+    title: "Datum & Uhrzeit",
+    fields: [
+      { key: "datumStart", label: "Datum Start", type: "datum" },
+      { key: "uhrzeitStart", label: "Uhrzeit Start" },
+      { key: "datumEnde", label: "Datum Ende", type: "datum" },
+      { key: "uhrzeitEnde", label: "Uhrzeit Ende" }
+    ]
+  },
+  {
+    title: "Übernahme / Übergabe",
+    fields: [
+      { key: "uebernahmeVon", label: "Übernahme von" },
+      { key: "abholort", label: "Abholort" },
+      { key: "uebergabeAn", label: "Übergabe an" },
+      { key: "abstellort", label: "Abstellort" }
+    ]
+  },
+  {
+    title: "Anforderungen an den Fahrer",
+    fields: ANFORDERUNGEN.map((c) => ({ key: c.key, label: c.label, type: "bool" }))
+  },
+  {
+    title: "Fahrzeugkontrolle vor der Fahrt",
+    fields: KONTROLLE_VOR.map((c) => ({ key: c.key, label: c.label, type: "bool" }))
+  },
+  {
+    title: "Nach der Fahrt",
+    fields: KONTROLLE_NACH.map((c) => ({ key: c.key, label: c.label, type: "bool" }))
+  },
+  {
+    title: "Mängel & Status",
+    fields: [
+      { key: "maengelText", label: "Mängel / Beschädigungen" },
+      { key: "status", label: "Status", type: "status" },
+      { key: "quelle", label: "Quelle", type: "quelle" },
+      { key: "erstelltAm", label: "Erstellt am", type: "timestamp" }
+    ]
+  }
+];
+
 // Abschließender Hinweis aus der Vorlage (unter dem Formular angezeigt).
 const HINWEIS_ABSCHLUSS =
   "Fahrzeugcheckliste, Fahrzeugschlüssel, Beleg der Tankkarte (Name des Fahrers vermerken) und die " +
   "Tankkarte sind abschließend in den SCH-Briefkasten am Haupteingang des Gesundbrunnenstadions zu hinterlassen.";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.4",
+    groups: [
+      {
+        title: "Export",
+        items: [
+          "Neuer Button „CSV-Export…“ bei den Fahrten – jedes Feld (Fahrzeug & Fahrt, Kilometerstand, Datum & Uhrzeit, Übernahme/Übergabe, Checklisten, Mängel & Status) einzeln per Checkbox wählbar.",
+          "Export berücksichtigt die aktuelle Such-/Filter-Einstellung; wer nicht alle Fahrten sehen darf, exportiert automatisch nur die eigenen."
+        ]
+      }
+    ]
+  },
   {
     version: "1.3",
     groups: [

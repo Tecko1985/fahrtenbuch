@@ -116,15 +116,23 @@ function fillFahrerFilter() {
   el.innerHTML = `<option value="">Alle Fahrer</option>` + namen.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
   if (namen.includes(cur)) el.value = cur;
 }
-function renderFahrten() {
+// Suche/Fahrer-Filter + Sortierung — einzige Quelle für "was ist gerade sichtbar",
+// genutzt von renderFahrten() (Bildschirmliste) UND vom CSV-Export (exportFahrtenCsv),
+// damit beide garantiert dieselbe Menge zeigen/exportieren.
+function filteredFahrten() {
   const q = val("fahrten-search").trim().toLowerCase();
   const ff = canEdit() ? val("fahrten-fahrer") : "";
   const all = visibleFahrten();
-  const rows = all.filter((f) => {
+  return all.filter((f) => {
     if (ff && f.fahrerName !== ff) return false;
     if (q && !`${f.reiseziel} ${f.abteilung} ${f.kennzeichen} ${f.fahrerName}`.toLowerCase().includes(q)) return false;
     return true;
   }).sort((a, b) => (b.datumStart || "").localeCompare(a.datumStart || "") || (b.erstelltAm || "").localeCompare(a.erstelltAm || ""));
+}
+function renderFahrten() {
+  const all = visibleFahrten();
+  const rows = filteredFahrten();
+  updateExportInfoLine();
 
   document.getElementById("fahrten-list").innerHTML = rows.map((f) => {
     const farbe = STATUS_FARBE[f.status] || STATUS_FARBE.offen;
@@ -141,6 +149,84 @@ function renderFahrten() {
   }).join("");
   document.getElementById("fahrten-count").textContent = `${rows.length} von ${all.length}`;
   document.getElementById("fahrten-empty").classList.toggle("hidden", rows.length > 0);
+}
+
+// ---------- CSV-Export (konfigurierbar) ----------
+// Jedes Feld einzeln per Checkbox wählbar (EXPORT_FIELD_GROUPS in config.js).
+// Exportiert immer genau die aktuell gefilterte/gesuchte Liste (filteredFahrten()) —
+// für Nutzer ohne Bearbeiten-Recht ist das automatisch nur die eigene Historie
+// (visibleFahrten() greift schon davor), kein Sonderfall nötig.
+function initExportPanel() {
+  renderExportFieldCheckboxes();
+  document.getElementById("btn-export-toggle").addEventListener("click", () => {
+    const panel = document.getElementById("export-panel");
+    const willOpen = panel.style.display === "none";
+    panel.style.display = willOpen ? "" : "none";
+    if (willOpen) updateExportInfoLine();
+  });
+  document.getElementById("btn-export-felder-alle").addEventListener("click", () => setAllExportCheckboxes(true));
+  document.getElementById("btn-export-felder-keine").addEventListener("click", () => setAllExportCheckboxes(false));
+  document.getElementById("btn-export-csv").addEventListener("click", exportFahrtenCsv);
+}
+function renderExportFieldCheckboxes() {
+  const wrap = document.getElementById("export-field-groups");
+  wrap.innerHTML = EXPORT_FIELD_GROUPS.map((group) => `
+    <div style="font-size:13px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.3px; margin:14px 0 8px;">${escapeHtml(group.title)}</div>
+    <div class="checkbox-list">
+      ${group.fields.map((f) => `
+        <label class="checkbox-row"><input type="checkbox" class="export-field-cb" data-field="${escapeHtml(f.key)}" checked /> <span>${escapeHtml(f.label)}</span></label>
+      `).join("")}
+    </div>
+  `).join("");
+  wrap.querySelectorAll(".export-field-cb").forEach((cb) => cb.addEventListener("change", updateExportInfoLine));
+}
+function setAllExportCheckboxes(checked) {
+  document.querySelectorAll(".export-field-cb").forEach((cb) => { cb.checked = checked; });
+  updateExportInfoLine();
+}
+function updateExportInfoLine() {
+  const el = document.getElementById("export-info-line");
+  if (!el) return;
+  const total = document.querySelectorAll(".export-field-cb").length;
+  const checked = document.querySelectorAll(".export-field-cb:checked").length;
+  const rowCount = filteredFahrten().length;
+  el.textContent = `${checked} von ${total} Feldern ausgewählt · exportiert ${rowCount} Fahrten (aktuelle Filterung/Suche).`;
+}
+function csvCell(value) {
+  const s = value == null ? "" : String(value);
+  return /[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportFieldValue(f, fahrt) {
+  const v = fahrt[f.key];
+  switch (f.type) {
+    case "datum": return v ? fmtDatum(v) : "";
+    case "timestamp": return v ? fmtTimestamp(v) : "";
+    case "bool": return v ? "Ja" : "Nein";
+    case "status": return STATUS_LABEL[v] || v || "";
+    case "quelle": return v === "extern" ? "Extern" : "Intern";
+    default: return v == null ? "" : v;
+  }
+}
+function exportFahrtenCsv() {
+  const selectedKeys = Array.from(document.querySelectorAll(".export-field-cb:checked")).map((cb) => cb.dataset.field);
+  if (!selectedKeys.length) { alert("Bitte mindestens ein Feld für den Export auswählen."); return; }
+  const rows = filteredFahrten();
+  if (!rows.length) { alert("Die aktuelle Filterung/Suche ergibt keine Treffer zum Exportieren."); return; }
+
+  const fieldLookup = new Map(EXPORT_FIELD_GROUPS.flatMap((g) => g.fields).map((f) => [f.key, f]));
+  const cols = selectedKeys.map((key) => fieldLookup.get(key)).filter(Boolean);
+  const lines = [cols.map((f) => f.label), ...rows.map((f) => cols.map((c) => exportFieldValue(c, f)))];
+  // Semikolon statt Komma + UTF-8-BOM: deutsches Excel erkennt das Trennzeichen
+  // damit automatisch beim Doppelklick und zeigt Umlaute korrekt.
+  const csv = String.fromCharCode(0xFEFF) + lines.map((line) => line.map(csvCell).join(";")).join("\r\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "fahrtenbuch_export_" + new Date().toISOString().slice(0, 10) + ".csv";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
 }
 
 // ---------- Fahrt-Formular ----------
@@ -538,6 +624,7 @@ function setupListeners() {
     if (row) openFahrt(row.dataset.id);
   });
   document.getElementById("btn-new-fahrt").addEventListener("click", () => openFahrt(null));
+  initExportPanel();
 
   // Fahrt-Modal
   document.getElementById("fahrt-modal-close").addEventListener("click", () => closeFahrt(true));
