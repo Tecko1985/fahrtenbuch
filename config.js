@@ -113,7 +113,7 @@ const APP_CHANGELOG = [
         title: "Export",
         items: [
           "Neuer Button „CSV-Export…“ bei den Fahrten – jedes Feld (Fahrzeug & Fahrt, Kilometerstand, Datum & Uhrzeit, Übernahme/Übergabe, Checklisten, Mängel & Status) einzeln per Checkbox wählbar.",
-          "Export berücksichtigt die aktuelle Such-/Filter-Einstellung; wer nicht alle Fahrten sehen darf, exportiert automatisch nur die eigenen."
+          "Export berücksichtigt die aktuelle Such-/Filter-Einstellung. Sichtbar nur für Bearbeiter/Admin (wie der Fahrer-Filter)."
         ]
       }
     ]
