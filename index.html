@@ -101,44 +101,48 @@
           <button type="button" class="btn small secondary" id="btn-submit-beleg">🧾 Beleg einreichen</button>
           <span class="muted" id="ff-beleg-status"></span>
         </div>
-        <form id="fahrt-form" autocomplete="off">
+        <form id="fahrt-form" autocomplete="off" novalidate>
+
+          <p class="muted" style="margin:0 0 12px;">* Pflichtfeld — zum Abschließen der Fahrt müssen alle
+            Pflichtfelder ausgefüllt, alle Checklisten-Punkte abgehakt und die Unterschrift geleistet sein.
+            Zwischenspeichern ist auch mit unvollständigen Angaben möglich.</p>
 
           <fieldset class="form-fieldset">
             <legend>Fahrzeug &amp; Fahrt</legend>
             <div class="form-grid">
-              <div class="form-field"><label>Kennzeichen</label><input type="text" id="ff-kennzeichen" placeholder="z. B. EIC-SC 191" /></div>
-              <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="ff-fahrer" /></div>
-              <div class="form-field"><label>Abteilung / Mannschaft</label><input type="text" id="ff-abteilung" placeholder="z. B. C-Jugend" /></div>
-              <div class="form-field"><label>Anzahl der Insassen</label><input type="number" id="ff-insassen" min="0" inputmode="numeric" /></div>
-              <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="ff-reiseziel" placeholder="z. B. Mühlhausen" /></div>
+              <div class="form-field"><label>Kennzeichen *</label><input type="text" id="ff-kennzeichen" placeholder="z. B. EIC-SC 191" required /></div>
+              <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="ff-fahrer" required /></div>
+              <div class="form-field"><label>Abteilung / Mannschaft *</label><input type="text" id="ff-abteilung" placeholder="z. B. C-Jugend" required /></div>
+              <div class="form-field"><label>Anzahl der Insassen *</label><input type="number" id="ff-insassen" min="0" inputmode="numeric" required /></div>
+              <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="ff-reiseziel" placeholder="z. B. Mühlhausen" required /></div>
             </div>
           </fieldset>
 
           <fieldset class="form-fieldset">
             <legend>Kilometerstand</legend>
             <div class="form-grid">
-              <div class="form-field"><label>Start</label><input type="number" id="ff-kmstart" min="0" inputmode="numeric" /></div>
-              <div class="form-field"><label>Ende</label><input type="number" id="ff-kmende" min="0" inputmode="numeric" /></div>
+              <div class="form-field"><label>Start *</label><input type="number" id="ff-kmstart" min="0" inputmode="numeric" required /></div>
+              <div class="form-field"><label>Ende *</label><input type="number" id="ff-kmende" min="0" inputmode="numeric" required /></div>
             </div>
           </fieldset>
 
           <fieldset class="form-fieldset">
             <legend>Datum &amp; Uhrzeit</legend>
             <div class="form-grid">
-              <div class="form-field"><label>Datum Start</label><input type="date" id="ff-datumstart" /></div>
-              <div class="form-field"><label>Uhrzeit Start</label><input type="time" id="ff-uhrzeitstart" /></div>
-              <div class="form-field"><label>Datum Ende</label><input type="date" id="ff-datumende" /></div>
-              <div class="form-field"><label>Uhrzeit Ende</label><input type="time" id="ff-uhrzeitende" /></div>
+              <div class="form-field"><label>Datum Start *</label><input type="date" id="ff-datumstart" required /></div>
+              <div class="form-field"><label>Uhrzeit Start *</label><input type="time" id="ff-uhrzeitstart" required /></div>
+              <div class="form-field"><label>Datum Ende *</label><input type="date" id="ff-datumende" required /></div>
+              <div class="form-field"><label>Uhrzeit Ende *</label><input type="time" id="ff-uhrzeitende" required /></div>
             </div>
           </fieldset>
 
           <fieldset class="form-fieldset">
             <legend>Übernahme / Übergabe</legend>
             <div class="form-grid">
-              <div class="form-field"><label>Übernahme von</label><input type="text" id="ff-uebernahme" /></div>
-              <div class="form-field"><label>Abholort</label><input type="text" id="ff-abholort" /></div>
-              <div class="form-field"><label>Übergabe an</label><input type="text" id="ff-uebergabe" /></div>
-              <div class="form-field"><label>Abstellort</label><input type="text" id="ff-abstellort" /></div>
+              <div class="form-field"><label>Übernahme von *</label><input type="text" id="ff-uebernahme" required /></div>
+              <div class="form-field"><label>Abholort *</label><input type="text" id="ff-abholort" required /></div>
+              <div class="form-field"><label>Übergabe an *</label><input type="text" id="ff-uebergabe" required /></div>
+              <div class="form-field"><label>Abstellort *</label><input type="text" id="ff-abstellort" required /></div>
             </div>
           </fieldset>
 
@@ -153,7 +157,7 @@
           </fieldset>
 
           <fieldset class="form-fieldset">
-            <legend>Mängel / Beschädigungen</legend>
+            <legend>Mängel / Beschädigungen (optional)</legend>
             <div class="form-field wide">
               <textarea id="ff-maengel" rows="3" placeholder="Beschädigungen beschreiben (falls vorhanden)…"></textarea>
             </div>
@@ -207,9 +211,9 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.4"></script>
+  <script src="config.js?v=1.5"></script>
   <script src="db.js?v=1.0"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="app.js?v=1.4"></script>
+  <script src="app.js?v=1.5"></script>
 </body>
 </html>

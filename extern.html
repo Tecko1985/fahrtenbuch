@@ -34,42 +34,45 @@
     <!-- ---------- Schritt 2: Formular ---------- -->
     <form id="fx-form" class="hidden" autocomplete="off">
 
+      <p class="muted" style="margin:0 0 12px;">* Pflichtfeld — alle Felder außer Mängel/Beschädigungen
+        sind Pflicht, ebenso alle Checklisten-Punkte, die Führerschein-Kopie und die Unterschrift.</p>
+
       <fieldset class="form-fieldset">
         <legend>Fahrzeug &amp; Fahrt</legend>
         <div class="form-grid">
-          <div class="form-field"><label>Kennzeichen</label><input type="text" id="fx-kennzeichen" placeholder="z. B. EIC-SC 191" /></div>
-          <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="fx-fahrer" /></div>
-          <div class="form-field"><label>Abteilung / Mannschaft</label><input type="text" id="fx-abteilung" placeholder="z. B. C-Jugend" /></div>
-          <div class="form-field"><label>Anzahl der Insassen</label><input type="number" id="fx-insassen" min="0" inputmode="numeric" /></div>
-          <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="fx-reiseziel" placeholder="z. B. Mühlhausen" /></div>
+          <div class="form-field"><label>Kennzeichen *</label><input type="text" id="fx-kennzeichen" placeholder="z. B. EIC-SC 191" required /></div>
+          <div class="form-field"><label>Name des Fahrers *</label><input type="text" id="fx-fahrer" required /></div>
+          <div class="form-field"><label>Abteilung / Mannschaft *</label><input type="text" id="fx-abteilung" placeholder="z. B. C-Jugend" required /></div>
+          <div class="form-field"><label>Anzahl der Insassen *</label><input type="number" id="fx-insassen" min="0" inputmode="numeric" required /></div>
+          <div class="form-field wide"><label>Reiseziel *</label><input type="text" id="fx-reiseziel" placeholder="z. B. Mühlhausen" required /></div>
         </div>
       </fieldset>
 
       <fieldset class="form-fieldset">
         <legend>Kilometerstand</legend>
         <div class="form-grid">
-          <div class="form-field"><label>Start</label><input type="number" id="fx-kmstart" min="0" inputmode="numeric" /></div>
-          <div class="form-field"><label>Ende</label><input type="number" id="fx-kmende" min="0" inputmode="numeric" /></div>
+          <div class="form-field"><label>Start *</label><input type="number" id="fx-kmstart" min="0" inputmode="numeric" required /></div>
+          <div class="form-field"><label>Ende *</label><input type="number" id="fx-kmende" min="0" inputmode="numeric" required /></div>
         </div>
       </fieldset>
 
       <fieldset class="form-fieldset">
         <legend>Datum &amp; Uhrzeit</legend>
         <div class="form-grid">
-          <div class="form-field"><label>Datum Start</label><input type="date" id="fx-datumstart" /></div>
-          <div class="form-field"><label>Uhrzeit Start</label><input type="time" id="fx-uhrzeitstart" /></div>
-          <div class="form-field"><label>Datum Ende</label><input type="date" id="fx-datumende" /></div>
-          <div class="form-field"><label>Uhrzeit Ende</label><input type="time" id="fx-uhrzeitende" /></div>
+          <div class="form-field"><label>Datum Start *</label><input type="date" id="fx-datumstart" required /></div>
+          <div class="form-field"><label>Uhrzeit Start *</label><input type="time" id="fx-uhrzeitstart" required /></div>
+          <div class="form-field"><label>Datum Ende *</label><input type="date" id="fx-datumende" required /></div>
+          <div class="form-field"><label>Uhrzeit Ende *</label><input type="time" id="fx-uhrzeitende" required /></div>
         </div>
       </fieldset>
 
       <fieldset class="form-fieldset">
         <legend>Übernahme / Übergabe</legend>
         <div class="form-grid">
-          <div class="form-field"><label>Übernahme von</label><input type="text" id="fx-uebernahme" /></div>
-          <div class="form-field"><label>Abholort</label><input type="text" id="fx-abholort" /></div>
-          <div class="form-field"><label>Übergabe an</label><input type="text" id="fx-uebergabe" /></div>
-          <div class="form-field"><label>Abstellort</label><input type="text" id="fx-abstellort" /></div>
+          <div class="form-field"><label>Übernahme von *</label><input type="text" id="fx-uebernahme" required /></div>
+          <div class="form-field"><label>Abholort *</label><input type="text" id="fx-abholort" required /></div>
+          <div class="form-field"><label>Übergabe an *</label><input type="text" id="fx-uebergabe" required /></div>
+          <div class="form-field"><label>Abstellort *</label><input type="text" id="fx-abstellort" required /></div>
         </div>
       </fieldset>
 
@@ -79,7 +82,7 @@
       </fieldset>
 
       <fieldset class="form-fieldset">
-        <legend>Führerschein-Kopie</legend>
+        <legend>Führerschein-Kopie *</legend>
         <p class="muted" style="margin-bottom:8px;">Foto oder Scan des Führerscheins — wird
           abgeschottet gespeichert, sichtbar nur für den Vereins-Admin und die
           Führerschein-Einsicht-Gruppe.</p>
@@ -96,7 +99,7 @@
       </fieldset>
 
       <fieldset class="form-fieldset">
-        <legend>Mängel / Beschädigungen</legend>
+        <legend>Mängel / Beschädigungen (optional)</legend>
         <div class="form-field wide">
           <textarea id="fx-maengel" rows="3" placeholder="Beschädigungen beschreiben (falls vorhanden)…"></textarea>
         </div>
@@ -156,9 +159,9 @@
     </div>
   </div>
 
-  <script src="config.js?v=1.0"></script>
+  <script src="config.js?v=1.5"></script>
   <script src="db-extern.js?v=1.0"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="extern.js?v=1.0"></script>
+  <script src="extern.js?v=1.5"></script>
 </body>
 </html>

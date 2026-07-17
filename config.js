@@ -107,6 +107,19 @@ const HINWEIS_ABSCHLUSS =
 
 const APP_CHANGELOG = [
   {
+    version: "1.5",
+    groups: [
+      {
+        title: "Pflichtfelder",
+        items: [
+          "Beim Abschließen einer Fahrt (intern) bzw. beim Eintragen (extern) sind jetzt alle Felder Pflicht — außer Mängel/Beschädigungen. Auch alle Checklisten-Punkte müssen abgehakt sein.",
+          "Auf der externen Seite ist zusätzlich die Führerschein-Kopie Pflicht.",
+          "Zwischenspeichern einer offenen Fahrt bleibt weiterhin mit unvollständigen Angaben möglich."
+        ]
+      }
+    ]
+  },
+  {
     version: "1.4",
     groups: [
       {

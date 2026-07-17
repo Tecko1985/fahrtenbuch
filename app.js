@@ -232,7 +232,7 @@ function exportFahrtenCsv() {
 // ---------- Fahrt-Formular ----------
 function renderChecks(containerId, defs, fahrt) {
   document.getElementById(containerId).innerHTML = defs.map((c) =>
-    `<label class="checkbox-row"><input type="checkbox" data-check="${escapeHtml(c.key)}" ${fahrt && fahrt[c.key] ? "checked" : ""} /> <span>${escapeHtml(c.label)}</span></label>`
+    `<label class="checkbox-row"><input type="checkbox" data-check="${escapeHtml(c.key)}" required ${fahrt && fahrt[c.key] ? "checked" : ""} /> <span>${escapeHtml(c.label)}</span></label>`
   ).join("");
 }
 function renderFotoList() {
@@ -345,6 +345,10 @@ async function saveFahrt(status) {
   const reiseziel = val("ff-reiseziel").trim();
   if (!fahrerName) { alert("Bitte den Namen des Fahrers angeben."); return; }
   if (status === "abgeschlossen") {
+    // Abschließen erzwingt alle Pflichtfelder (alles außer Mängel) + alle Checklisten-
+    // Häkchen; Zwischenspeichern ("offen") bleibt bewusst unvollständig möglich
+    // (deshalb novalidate am Formular, Prüfung nur hier).
+    if (!document.getElementById("fahrt-form").reportValidity()) return;
     if (!reiseziel) { alert("Bitte ein Reiseziel angeben."); return; }
     if (signaturePad.isEmpty()) { alert("Bitte unterschreiben, um die Fahrt abzuschließen."); return; }
   }

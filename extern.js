@@ -33,7 +33,7 @@ const ANFORDERUNGEN_EXTERN_LABELS = {
 function renderChecksExtern(containerId, defs) {
   document.getElementById(containerId).innerHTML = defs.map((c) => {
     const label = ANFORDERUNGEN_EXTERN_LABELS[c.key] || c.label;
-    return `<label class="checkbox-row"><input type="checkbox" data-check="${escapeHtml(c.key)}" /> <span>${escapeHtml(label)}</span></label>`;
+    return `<label class="checkbox-row"><input type="checkbox" data-check="${escapeHtml(c.key)}" required /> <span>${escapeHtml(label)}</span></label>`;
   }).join("");
 }
 
@@ -177,9 +177,12 @@ async function submitFahrt(e) {
   e.preventDefault();
   const fahrerName = val("fx-fahrer").trim();
   const reiseziel = val("fx-reiseziel").trim();
+  // Pflichtfelder + Checkboxen prüft der Browser schon vor dem submit-Event (required-
+  // Attribute); hier nur noch, was HTML-Validierung nicht abdeckt.
   if (!fahrerName) { alert("Bitte den Namen des Fahrers angeben."); return; }
   if (!reiseziel) { alert("Bitte ein Reiseziel angeben."); return; }
   if (signaturePad.isEmpty()) { alert("Bitte unterschreiben, um die Fahrt einzutragen."); return; }
+  if (!fuehrerscheinFile) { alert("Bitte eine Führerschein-Kopie hochladen, um die Fahrt einzutragen."); return; }
 
   const fahrt = {
     id: currentFahrtId,
