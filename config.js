@@ -107,73 +107,6 @@ const HINWEIS_ABSCHLUSS =
 
 const APP_CHANGELOG = [
   {
-    version: "1.5",
-    groups: [
-      {
-        title: "Pflichtfelder",
-        items: [
-          "Beim Abschließen einer Fahrt (intern) bzw. beim Eintragen (extern) sind jetzt alle Felder Pflicht — außer Mängel/Beschädigungen. Auch alle Checklisten-Punkte müssen abgehakt sein.",
-          "Auf der externen Seite ist zusätzlich die Führerschein-Kopie Pflicht.",
-          "Zwischenspeichern einer offenen Fahrt bleibt weiterhin mit unvollständigen Angaben möglich."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.4",
-    groups: [
-      {
-        title: "Export",
-        items: [
-          "Neuer Button „CSV-Export…“ bei den Fahrten – jedes Feld (Fahrzeug & Fahrt, Kilometerstand, Datum & Uhrzeit, Übernahme/Übergabe, Checklisten, Mängel & Status) einzeln per Checkbox wählbar.",
-          "Export berücksichtigt die aktuelle Such-/Filter-Einstellung. Sichtbar nur für Bearbeiter/Admin (wie der Fahrer-Filter)."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.3",
-    groups: [
-      {
-        title: "Beleg anzeigen",
-        items: [
-          "Die Bestätigung „Beleg eingereicht am …“ bei einer Fahrt hat jetzt einen „Anzeigen“-Knopf, der den eingereichten Beleg (Foto/PDF) direkt im gewohnten Datei-Viewer öffnet — wie beim Führerschein-Ansehen."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.2",
-    groups: [
-      {
-        title: "Beleg einreichen",
-        items: [
-          "Neuer Knopf „🧾 Beleg einreichen“ an jeder gespeicherten Fahrt (intern) bzw. auf der Bestätigungsseite (extern) öffnet das Belegeingangs-Formular des Vereins mit vorausgefüllten Angaben (Fahrer, Datum, Zweck) — nur noch Belegfoto anhängen und absenden.",
-          "Sobald ein Beleg eingegangen ist, zeigt die Fahrt intern eine Bestätigung mit Einreichdatum an."
-        ]
-      },
-      {
-        title: "Sichtbarkeit",
-        items: [
-          "Wer keine eigenen Bearbeiten-Rechte hat, bekommt jetzt auch technisch nur noch die eigenen Fahrten übertragen (vorher nur in der Ansicht ausgeblendet) — Admin und die Gruppe „Fahrtenbuch Bearbeiter“ weiterhin mit voller Sicht."
-        ]
-      }
-    ]
-  },
-  {
-    version: "1.1",
-    groups: [
-      {
-        title: "Externes Fahrtenbuch für Eltern",
-        items: [
-          "Neue eigenständige Seite „extern.html“ für Eltern ohne eigenes Vereinskonto, die gelegentlich ein Vereinsfahrzeug fahren — geschützt durch einen einfachen Zugriffscode statt Login.",
-          "Externe Fahrten enthalten dieselben Felder wie das interne Formular (Kopfdaten, Sicherheits-Checklisten, Mängelfotos, Unterschrift) und erscheinen sofort in der normalen Fahrten-Liste, deutlich mit einem „🔗 Extern“-Badge gekennzeichnet.",
-          "Führerschein-Kopie kann direkt beim Eintragen der Fahrt mit hochgeladen werden — abgeschottet gespeichert, sichtbar nur für Admin und die Gruppe „Führerschein Einsicht“ über den Button „Führerschein ansehen“ am jeweiligen Eintrag."
-        ]
-      }
-    ]
-  },
-  {
     version: "1.0",
     groups: [
       {
@@ -183,7 +116,28 @@ const APP_CHANGELOG = [
           "Sicherheits-Checklisten vor und nach der Fahrt (gültiger Führerschein, Mindestalter, kein Alkohol, Verkehrssicherheit, Sichtkontrolle, vollgetankt, Reinigung) direkt zum Abhaken. Die Führerschein-Kopie selbst wird in Trainerdaten hinterlegt.",
           "Mängel/Beschädigungen als Freitext plus Foto-Upload — die Fotos landen sicher im Vereins-Nextcloud, kein Verschicken per Mail mehr nötig.",
           "Fahrt wird handschriftlich (Finger/Maus) unterschrieben und abgeschlossen.",
-          "Zwischenspeichern möglich: eine Fahrt kann als „offen“ begonnen und später abgeschlossen werden."
+          "Beim Abschließen sind alle Felder außer Mängel/Beschädigungen sowie alle Checklisten-Punkte Pflicht; eine begonnene Fahrt kann aber jederzeit als „offen“ zwischengespeichert und später abgeschlossen werden."
+        ]
+      },
+      {
+        title: "Beleg einreichen",
+        items: [
+          "Über einen Knopf direkt an der Fahrt lässt sich ein Tankbeleg o. Ä. beim Vereinsbudget-Tool einreichen — Fahrer, Datum und Zweck sind schon vorausgefüllt, nur noch Belegfoto anhängen und absenden.",
+          "Sobald ein Beleg eingegangen ist, zeigt die Fahrt eine Bestätigung mit Einreichdatum und einem „Anzeigen“-Knopf, der den eingereichten Beleg direkt im gewohnten Datei-Viewer öffnet."
+        ]
+      },
+      {
+        title: "CSV-Export",
+        items: [
+          "Export der Fahrten-Liste als CSV — jedes Feld (Fahrzeug & Fahrt, Kilometerstand, Datum & Uhrzeit, Übernahme/Übergabe, Checklisten, Mängel & Status) einzeln per Checkbox wählbar, berücksichtigt die aktuelle Such-/Filter-Einstellung. Sichtbar nur für Admin und die Gruppe „Fahrtenbuch Bearbeiter“."
+        ]
+      },
+      {
+        title: "Externes Fahrtenbuch für Eltern",
+        items: [
+          "Eigenständige Seite („extern.html“) für Eltern ohne eigenes Vereinskonto, die gelegentlich ein Vereinsfahrzeug fahren — geschützt durch einen einfachen Zugriffscode statt Login.",
+          "Externe Fahrten enthalten dieselben Felder wie das interne Formular (Kopfdaten, Sicherheits-Checklisten, Mängelfotos, Unterschrift, alle Felder Pflicht) plus eine zusätzlich verpflichtende Führerschein-Kopie beim Eintragen — abgeschottet gespeichert, sichtbar nur für Admin und die Gruppe „Führerschein Einsicht“ über den Button „Führerschein ansehen“.",
+          "Externe Fahrten erscheinen sofort in der normalen Fahrten-Liste, deutlich mit einem „🔗 Extern“-Badge gekennzeichnet, und sind nur für Admin/„Fahrtenbuch Bearbeiter“ sicht- und verwaltbar."
         ]
       },
       {
