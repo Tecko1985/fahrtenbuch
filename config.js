@@ -107,18 +107,6 @@ const HINWEIS_ABSCHLUSS =
 
 const APP_CHANGELOG = [
   {
-    version: "1.1",
-    groups: [
-      {
-        title: "Speichern",
-        items: [
-          "Wurden mehrere Fahrten zügig hintereinander abgeschlossen oder gelöscht, erschien wiederholt die Meldung, die Daten seien zwischenzeitlich auf einem anderen Gerät geändert worden — obwohl niemand sonst am Fahrtenbuch gearbeitet hat. Die zuletzt gemachte Eingabe ging dabei verloren.",
-          "Ursache war, dass zwei Speichervorgänge gleichzeitig unterwegs sein konnten. Jetzt wird immer nur ein Speichervorgang gleichzeitig ausgeführt; alles, was währenddessen geändert wird, speichert die App unmittelbar danach automatisch nach."
-        ]
-      }
-    ]
-  },
-  {
     version: "1.0",
     groups: [
       {
