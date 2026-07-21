@@ -537,7 +537,7 @@ function switchTab(tab) {
   document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".tab-section").forEach((s) => s.classList.toggle("active", s.id === "tab-" + tab));
   if (tab === "fahrten") { fillFahrerFilter(); renderFahrten(); }
-  if (tab === "einstellungen") { renderMeta(); renderVersionInfo(); }
+  if (tab === "info") { renderMeta(); renderVersionInfo(); }
 }
 
 // ---------- Gateway: Laden / Speichern / Konflikte ----------
@@ -641,9 +641,9 @@ function setupListeners() {
   document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
 
   const versionBadgeHeader = document.getElementById("version-badge");
-  versionBadgeHeader.addEventListener("click", () => switchTab("einstellungen"));
+  versionBadgeHeader.addEventListener("click", () => switchTab("info"));
   versionBadgeHeader.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchTab("einstellungen"); }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchTab("info"); }
   });
 
   // Fahrten-Liste

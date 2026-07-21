@@ -10,13 +10,19 @@
 <body class="extern-page">
 
   <header>
-    <h1>🚐 Fahrtenbuch <span class="version-badge">extern</span></h1>
+    <h1>🚐 Fahrtenbuch <span class="version-badge">extern</span> <span class="version-badge version-badge-link" id="version-badge" role="button" tabindex="0" title="Versionshistorie ansehen"></span></h1>
     <div class="header-right">
       <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
     </div>
   </header>
 
+  <nav>
+    <button data-tab="fahrt" class="active">Fahrt eintragen</button>
+    <button data-tab="info">Info</button>
+  </nav>
+
   <main>
+   <div class="tab-section active" id="tab-fahrt">
 
     <!-- ---------- Schritt 1: Zugriffscode ---------- -->
     <div class="connect-screen" id="fx-gate">
@@ -144,6 +150,23 @@
       </div>
     </div>
 
+   </div>
+
+    <!-- ---------- Info ---------- -->
+    <div class="tab-section" id="tab-info">
+      <div class="card">
+        <h2>Über das externe Fahrtenbuch <span class="version-badge" id="version-badge-2"></span></h2>
+        <p class="muted">
+          Diese Seite ist für Fahrerinnen und Fahrer ohne Vereinskonto gedacht — etwa Eltern,
+          die eine Mannschaft zum Auswärtsspiel fahren. Mit dem Zugriffscode vom Verein lässt
+          sich die Fahrt eintragen und abschließen, ganz ohne Anmeldung.
+        </p>
+      </div>
+      <div class="card">
+        <h2>Änderungen</h2>
+        <div id="changelog-list"></div>
+      </div>
+    </div>
   </main>
 
   <!-- ---------- Datei-Viewer (Vorschau eigener Uploads) ---------- -->
@@ -160,8 +183,8 @@
   </div>
 
   <script src="config.js?v=1.0"></script>
-  <script src="db-extern.js?v=1.0"></script>
+  <script src="db-extern.js?v=1.1"></script>
   <script src="signature-pad.js?v=1.0"></script>
-  <script src="extern.js?v=1.0"></script>
+  <script src="extern.js?v=1.1"></script>
 </body>
 </html>

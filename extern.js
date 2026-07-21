@@ -308,4 +308,37 @@ function init() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", init);
+// ---------- Info-Tab / Versionshistorie ----------
+function activateTab(name) {
+  document.querySelectorAll("nav button[data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".tab-section").forEach((s) => s.classList.toggle("active", s.id === "tab-" + name));
+}
+
+function renderVersionInfo() {
+  document.querySelectorAll("#version-badge, #version-badge-2").forEach((el) => { if (el) el.textContent = "v" + APP_VERSION; });
+  const list = document.getElementById("changelog-list");
+  if (!list) return;
+  list.innerHTML = APP_CHANGELOG.map((entry) => `
+    <div class="changelog-entry">
+      <div class="cv">Version ${entry.version}</div>
+      ${entry.groups.map((g) => `
+        <div class="changelog-group">
+          <div class="cg-title">${g.title}</div>
+          <ul class="cg-items">${g.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        </div>`).join("")}
+    </div>`).join("");
+}
+
+function setupInfoTab() {
+  document.querySelectorAll("nav button[data-tab]").forEach((b) => {
+    b.addEventListener("click", () => activateTab(b.dataset.tab));
+  });
+  const badge = document.getElementById("version-badge");
+  badge.addEventListener("click", () => activateTab("info"));
+  badge.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activateTab("info"); }
+  });
+  renderVersionInfo();
+}
+
+document.addEventListener("DOMContentLoaded", () => { init(); setupInfoTab(); });
